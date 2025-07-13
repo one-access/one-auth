@@ -15,6 +15,14 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.KeyFactory;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -30,7 +38,8 @@ public class JWTTokenProvider {
     private static final String BEARER_TOKEN_START = "Bearer ";
 
     // Initialized from configuration properties
-    private String secretKey;
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
     private long validityInMilliseconds;
 
     @Autowired
@@ -41,12 +50,35 @@ public class JWTTokenProvider {
 
     @PostConstruct
     protected void init() {
-        if (appProperties.getJwt().isSecretKeyBase64Encoded()) {
-            secretKey = appProperties.getJwt().getSecretKey();
-        } else {
-            secretKey = Base64.getEncoder().encodeToString(appProperties.getJwt().getSecretKey().getBytes());
+        try {
+            privateKey = loadPrivateKey(appProperties.getJwt().getPrivateKey());
+            publicKey = loadPublicKey(appProperties.getJwt().getPublicKey());
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to load JWT keys", e);
         }
         validityInMilliseconds = appProperties.getJwt().getExpirationMillis();
+    }
+
+    private PrivateKey loadPrivateKey(String keyPem) throws Exception {
+        String key = keyPem
+                .replaceAll("-----BEGIN (.*)-----", "")
+                .replaceAll("-----END (.*)-----", "")
+                .replaceAll("\n", "");
+        byte[] decoded = Base64.getDecoder().decode(key);
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        return kf.generatePrivate(spec);
+    }
+
+    private PublicKey loadPublicKey(String keyPem) throws Exception {
+        String key = keyPem
+                .replaceAll("-----BEGIN (.*)-----", "")
+                .replaceAll("-----END (.*)-----", "")
+                .replaceAll("\n", "");
+        byte[] decoded = Base64.getDecoder().decode(key);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        return kf.generatePublic(spec);
     }
 
     public String createJWTToken(Authentication authentication) {
@@ -73,13 +105,13 @@ public class JWTTokenProvider {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(validity)
-                .signWith(SignatureAlgorithm.HS512, secretKey)
+                .signWith(SignatureAlgorithm.RS256, privateKey)
                 .compact();
     }
 
     public Authentication getAuthenticationFromToken(String token) {
         Claims body = Jwts.parser()
-                .setSigningKey(secretKey)
+                .setSigningKey(publicKey)
                 .parseClaimsJws(token)
                 .getBody();
 
@@ -108,7 +140,7 @@ public class JWTTokenProvider {
 
     public boolean validateJWTToken(String token) {
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            Jws<Claims> claims = Jwts.parser().setSigningKey(publicKey).parseClaimsJws(token);
             if (claims.getBody().getExpiration().before(new Date())) {
                 return false;
             }

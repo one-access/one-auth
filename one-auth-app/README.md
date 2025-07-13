@@ -36,6 +36,8 @@ See `application.yml` for database, mail and OAuth client settings. Beans such a
 
 `JWTAuthenticationFilter` extracts tokens from the `Authorization` header. Tokens are created and validated by `JWTTokenProvider`. OAuth2 requests are handled by `CustomOAuth2UserService` along with success and failure handlers.
 
+The JWT provider now loads an RSA key pair from application properties. The keys can be provided via environment variables or use the defaults in `application.yml`.
+
 ### Email Templates
 
 Welcome, verification and password reset emails use Freemarker templates found in `src/main/resources/mail-templates`.

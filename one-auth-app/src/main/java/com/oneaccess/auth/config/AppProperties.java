@@ -60,8 +60,8 @@ public class AppProperties {
     @Setter
     public static class Jwt {
 
-        private String secretKey;
-        private boolean isSecretKeyBase64Encoded = false;
+        private String privateKey;
+        private String publicKey;
         private long expirationMillis = 864000000L; // 10 days
         // For short-lived tokens and cookies
         private int shortLivedMillis = 120000; // Two minutes

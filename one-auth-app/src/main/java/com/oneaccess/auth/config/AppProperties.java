@@ -60,8 +60,8 @@ public class AppProperties {
     @Setter
     public static class Jwt {
 
-        private String privateKey;
-        private String publicKey;
+        private String privateKeyPath = "classpath:keys/private.pem";
+        private String publicKeyPath = "classpath:keys/public.pem";
         private long expirationMillis = 864000000L; // 10 days
         // For short-lived tokens and cookies
         private int shortLivedMillis = 120000; // Two minutes

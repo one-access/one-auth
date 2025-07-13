@@ -21,11 +21,13 @@ import java.security.KeyFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Base64;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import org.springframework.util.ResourceUtils;
 
 /**
  * Util based class that generates JWT token, create Authentication Object from token string and Validates token string
@@ -51,8 +53,14 @@ public class JWTTokenProvider {
     @PostConstruct
     protected void init() {
         try {
-            privateKey = loadPrivateKey(appProperties.getJwt().getPrivateKey());
-            publicKey = loadPublicKey(appProperties.getJwt().getPublicKey());
+            String privateKeyPem = Files.readString(
+                    ResourceUtils.getFile(appProperties.getJwt().getPrivateKeyPath()).toPath(),
+                    StandardCharsets.UTF_8);
+            String publicKeyPem = Files.readString(
+                    ResourceUtils.getFile(appProperties.getJwt().getPublicKeyPath()).toPath(),
+                    StandardCharsets.UTF_8);
+            privateKey = loadPrivateKey(privateKeyPem);
+            publicKey = loadPublicKey(publicKeyPem);
         } catch (Exception e) {
             throw new IllegalStateException("Unable to load JWT keys", e);
         }

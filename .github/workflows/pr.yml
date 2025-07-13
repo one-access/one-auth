@@ -1,0 +1,56 @@
+name: PR Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+    types: [opened, synchronize, reopened]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY_APP: one-auth-app
+  ECR_REPOSITORY_JAR: one-auth-jar
+  IMAGE_TAG: ${{ github.run_number }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    env:
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Maven
+        run: mvn -B -DskipTests package
+
+      - name: Build Docker images
+        run: |
+          docker build -t $ECR_REPOSITORY_APP:$IMAGE_TAG -f Dockerfile .
+          docker build -t $ECR_REPOSITORY_JAR:$IMAGE_TAG -f one-auth-jar/Dockerfile .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+      - name: Tag images
+        run: |
+          docker tag $ECR_REPOSITORY_APP:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_APP:$IMAGE_TAG
+          docker tag $ECR_REPOSITORY_JAR:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_JAR:$IMAGE_TAG
+
+      - name: Push images
+        run: |
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_APP:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_JAR:$IMAGE_TAG

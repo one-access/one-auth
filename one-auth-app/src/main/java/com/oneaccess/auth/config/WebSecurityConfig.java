@@ -1,34 +1,34 @@
-package com.oneaccess.auth.springcustomizedstarterexample.config;
+package com.oneaccess.auth.config;
 
-import com.oneaccess.auth.springcustomizedstarterexample.security.CustomAuthenticationEntryPoint;
-import com.oneaccess.auth.springcustomizedstarterexample.security.CustomUserDetailsService;
-import com.oneaccess.auth.springcustomizedstarterexample.security.JWTAuthenticationFilter;
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.CustomOAuth2UserService;
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.OAuth2AuthenticationFailureHandler;
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.OAuth2AuthenticationSuccessHandler;
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.oneaccess.auth.security.CustomAuthenticationEntryPoint;
+import com.oneaccess.auth.security.CustomUserDetailsService;
+import com.oneaccess.auth.security.JWTAuthenticationFilter;
+import com.oneaccess.auth.security.oauth.CustomOAuth2UserService;
+import com.oneaccess.auth.security.oauth.OAuth2AuthenticationFailureHandler;
+import com.oneaccess.auth.security.oauth.OAuth2AuthenticationSuccessHandler;
+import com.oneaccess.auth.security.oauth.common.HttpCookieOAuth2AuthorizationRequestRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(
+@EnableMethodSecurity(
         securedEnabled = true,
         jsr250Enabled = true,
         prePostEnabled = true
 )
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
 
     // CustomUserDetailsService - To process custom user SignUp/SignIn request
     // CustomOAuth2UserService - To process OAuth user SignUp/SignIn request
@@ -64,50 +64,44 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         this.oAuth2AuthenticationFailureHandler = oAuth2AuthenticationFailureHandler;
     }
 
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // withDefaults() uses a Bean by the name of CorsConfigurationSource
                 .cors(withDefaults())
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .csrf().disable()
-                //  CookieCsrfTokenRepository config - all put,post,delete request (form curl or browser or any) requires csrf token
-                // .csrf(c -> c.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-                .formLogin().disable()
-                .httpBasic().disable()
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(csrf -> csrf.disable())
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
                 .exceptionHandling(e -> e
-                        .authenticationEntryPoint(customAuthenticationEntryPoint))
-                .authorizeRequests(a -> a
-                        .antMatchers("/auth/**", "/oauth2/**").permitAll()
-                        .anyRequest().authenticated())
-                .oauth2Login(o -> o
-                        .authorizationEndpoint().baseUri("/oauth2/authorize")
+                    .authenticationEntryPoint(customAuthenticationEntryPoint)
+                )
+                .authorizeHttpRequests(authz -> authz
+                    .requestMatchers("/actuator/health", "/actuator/info", "/auth/**", "/oauth2/**").permitAll()
+                    .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                    .authorizationEndpoint(auth -> auth
+                        .baseUri("/oauth2/authorize")
                         .authorizationRequestRepository(httpCookieOAuth2AuthorizationRequestRepository)
-                        .and()
-                        .redirectionEndpoint().baseUri("/oauth2/callback/*")
-                        .and()
-                        .userInfoEndpoint().userService(customOAuth2UserService)
-                        .and()
-                        .successHandler(oAuth2AuthenticationSuccessHandler)
-                        .failureHandler(oAuth2AuthenticationFailureHandler));
+                    )
+                    .redirectionEndpoint(redir -> redir
+                        .baseUri("/oauth2/callback/*")
+                    )
+                    .userInfoEndpoint(userInfo -> userInfo
+                        .userService(customOAuth2UserService)
+                    )
+                    .successHandler(oAuth2AuthenticationSuccessHandler)
+                    .failureHandler(oAuth2AuthenticationFailureHandler)
+                );
 
-        // Add our custom Token based authentication filter
+        // Add our custom JWT filter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
 
     @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
-
-    @Override
-    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder
-                .userDetailsService(customUserDetailsService)
-                .passwordEncoder(passwordEncoder);
-    }
-
 }

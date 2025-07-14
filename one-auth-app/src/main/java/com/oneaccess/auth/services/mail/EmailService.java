@@ -1,6 +1,9 @@
-package com.oneaccess.auth.springcustomizedstarterexample.services.mail;
+package com.oneaccess.auth.services.mail;
 
-import com.oneaccess.auth.springcustomizedstarterexample.config.AppProperties;
+import com.oneaccess.auth.config.AppProperties;
+import jakarta.annotation.PostConstruct;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -10,9 +13,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.annotation.PostConstruct;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.HashMap;

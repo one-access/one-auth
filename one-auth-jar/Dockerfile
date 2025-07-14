@@ -13,6 +13,6 @@ RUN mvn -pl one-auth-jar -am -DskipTests package
 # ------------ Runtime stage ------------
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-COPY --from=build /workspace/one-auth-jar/target/one-auth-jar-0.0.1-SNAPSHOT-exec.jar app.jar
+COPY --from=build /workspace/one-auth-jar/target/one-auth-jar-0.0.1-SNAPSHOT-exec.jar one-auth-app.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java","-jar","one-auth-app.jar"]

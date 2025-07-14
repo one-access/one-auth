@@ -1,4 +1,4 @@
-package com.oneaccess.auth.springcustomizedstarterexample.services.common;
+package com.oneaccess.auth.services.common;
 
 import java.util.List;
 import java.util.stream.Collectors;

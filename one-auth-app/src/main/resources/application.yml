@@ -1,12 +1,12 @@
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8081}
 
 # jdbc and jpa config
 spring:
   datasource:
-    url: ${MYSQL_DB_URL:jdbc:mysql://localhost:3306/test?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false}
-    username: ${MYSQL_DB_USERNAME:root}
-    password: ${MYSQL_DB_PASSWORD:root}
+    url: jdbc:mysql://${MYSQL_URL:localhost}:${MYSQL_PORT:3306}/${MYSQL_ONEAUTH_DB_NAME:oneauth-db}?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+    username: ${MYSQL_ONEAUTH_USERNAME:root}
+    password: ${MYSQL_ONEAUTH_PASSWORD:root}
 
   jpa:
     show-sql: true
@@ -15,11 +15,11 @@ spring:
       naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
         jdbc:
           time_zone: UTC
 
-  # Mail Config
+  # Mail Config. Migrate to seperate service.
   mail:
     properties:
       mail:
@@ -33,8 +33,7 @@ spring:
     host: ${MAIL_HOST:smtp.gmail.com}
     username: ${MAIL_USERNAME:<<YOUR GMAIL>>}
     password: ${MAIL_PASSWORD:<<Generate-App-password-for-gmail>>} # Google Account, Search "App Passwords", generate password
-    port: ${MAIL_PORT:'587'}
-
+    port: ${MAIL_PORT:587}
   # freemarker config - used for email templates
   freemarker:
     template-loader-path: classpath:/mail-templates
@@ -72,24 +71,29 @@ logging:
       springframework:
         web: DEBUG
         security: DEBUG
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    mail:
+      enabled: false
+  endpoint:
+    health:
+      show-details: always
 
 # App Custom Properties
 myapp:
 
-  appName: spring security OAuth2 and JWT starter example
-  officialCompanyName: XYZ-Company Inc.
+  appName: One Auth Security OAuth2 and JWT
+  officialCompanyName: OneAccess
   officialCompanyDomain: http://localhost:4200
 
-  mail:
-    defaultEmailAddress: example@gmail.com
-    verificationCodeExpirationSeconds: 1800 # 30 minutes
-
   jwt:
-    privateKeyPath: ${JWT_PRIVATE_KEY_PATH:classpath:keys/private.pem}
-    publicKeyPath: ${JWT_PUBLIC_KEY_PATH:classpath:keys/public.pem}
-    expirationMillis: ${JWT_EXPIRATION_MILLIS:3600000}
-    shortLivedMillis: ${JWT_SHORT_LIVED_MILLIS:120000}
+    privateKeyB64: ${JWT_PRIVATE_KEY_B64:}
+    publicKeyB64: ${JWT_PUBLIC_KEY_B64:}
+    expiration: ${JWT_EXPIRATION_DURATION:1d}
 
   cors:
     allowedOrigins: ${APP_ALLOWED_ORIGINS:http://localhost:8080,http://localhost:4200}
@@ -97,6 +101,10 @@ myapp:
   oauth2:
     authorizedRedirectOrigins: ${OAUTH2_AUTHORIZED_REDIRECT_URIS:http://localhost:8080,http://localhost:4200}
     cookieExpireSeconds: ${OAUTH2_COOKIE_EXPIRE_SECONDS:120}
+
+  mail:
+    defaultEmailAddress: ${APP_EMAIL:example@gmail.com}
+    verificationCodeExpirationSeconds: 10m
 
   defaults:
     defaultPageStart: ${DEFAULT_PAGE_START:0}

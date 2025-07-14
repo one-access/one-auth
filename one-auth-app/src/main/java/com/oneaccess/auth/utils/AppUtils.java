@@ -1,4 +1,4 @@
-package com.oneaccess.auth.springcustomizedstarterexample.utils;
+package com.oneaccess.auth.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

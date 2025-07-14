@@ -1,4 +1,4 @@
-package com.swa.proj3commonmodule.security;
+package com.oneaccess.auth.security;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -28,7 +28,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         
         if (StringUtils.hasText(token) && jwtTokenParser.validateToken(token)) {
             log.info("Jwt Token Filter, processing authenticated request");
-            Authentication auth = jwtTokenParser.getAuthenticationFromTokenString(token, request);
+            Authentication auth = jwtTokenParser.getAuthenticationFromToken(token);
             if (auth != null) {
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 log.info("Authentication Object set for the current request");

@@ -1,13 +1,13 @@
-package com.oneaccess.auth.springcustomizedstarterexample.entities;
+package com.oneaccess.auth.entities;
 
-import com.oneaccess.auth.springcustomizedstarterexample.entities.common.AbstractGenericPKAuditableEntity;
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.SecurityEnums;
+import com.oneaccess.auth.entities.common.AbstractGenericPKAuditableEntity;
+import com.oneaccess.auth.security.oauth.common.SecurityEnums;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;

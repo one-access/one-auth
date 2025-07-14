@@ -1,27 +1,27 @@
-package com.oneaccess.auth.springcustomizedstarterexample.security.oauth;
+package com.oneaccess.auth.security.oauth;
 
-import com.oneaccess.auth.springcustomizedstarterexample.config.AppProperties;
-import com.oneaccess.auth.springcustomizedstarterexample.security.JWTTokenProvider;
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.HttpCookieOAuth2AuthorizationRequestRepository;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.AppWebUtils;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.exceptions.BadRequestException;
+import com.oneaccess.auth.config.AppProperties;
+import com.oneaccess.auth.security.JWTTokenProvider;
+import com.oneaccess.auth.security.oauth.common.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.oneaccess.auth.utils.AppWebUtils;
+import com.oneaccess.auth.utils.exceptions.BadRequestException;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.OAuth2Util.ORIGINAL_REQUEST_URI_PARAM_COOKIE_NAME;
-import static com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.OAuth2Util.REDIRECT_URI_PARAM_COOKIE_NAME;
+import static com.oneaccess.auth.security.oauth.common.OAuth2Util.ORIGINAL_REQUEST_URI_PARAM_COOKIE_NAME;
+import static com.oneaccess.auth.security.oauth.common.OAuth2Util.REDIRECT_URI_PARAM_COOKIE_NAME;
 
 /**
  * 1. Flow comes here "onAuthenticationSuccess()", After successful OAuth2 Authentication (see: CustomOAuth2UserService )

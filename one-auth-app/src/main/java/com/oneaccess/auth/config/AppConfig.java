@@ -1,7 +1,7 @@
-package com.oneaccess.auth.springcustomizedstarterexample.config;
+package com.oneaccess.auth.config;
 
-import com.oneaccess.auth.springcustomizedstarterexample.utils.AppUtils;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.AppWebUtils;
+import com.oneaccess.auth.utils.AppUtils;
+import com.oneaccess.auth.utils.AppWebUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

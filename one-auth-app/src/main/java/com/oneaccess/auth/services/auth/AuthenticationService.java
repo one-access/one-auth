@@ -1,9 +1,9 @@
-package com.oneaccess.auth.springcustomizedstarterexample.services.auth;
+package com.oneaccess.auth.services.auth;
 
-import com.oneaccess.auth.springcustomizedstarterexample.services.auth.dtos.AuthResponseDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.auth.dtos.LoginRequestDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.auth.dtos.RegisterUserRequestDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.UserDTO;
+import com.oneaccess.auth.services.auth.dtos.AuthResponseDTO;
+import com.oneaccess.auth.services.auth.dtos.LoginRequestDTO;
+import com.oneaccess.auth.services.auth.dtos.RegisterUserRequestDTO;
+import com.oneaccess.auth.services.webapp.user.dto.UserDTO;
 
 public interface AuthenticationService {
 

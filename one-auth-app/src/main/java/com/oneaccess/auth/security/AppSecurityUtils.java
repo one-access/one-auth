@@ -1,4 +1,4 @@
-package com.oneaccess.auth.springcustomizedstarterexample.security;
+package com.oneaccess.auth.security;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

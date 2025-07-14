@@ -1,20 +1,113 @@
-version: '3.8'
 services:
-  mysql:
+
+  oneauth-mysql:
     image: mysql:8
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: test
+      MYSQL_DATABASE: oneauth-db
     ports:
       - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
 
   app:
     build: .
     depends_on:
-      - mysql
+      oneauth-mysql:
+        condition: service_healthy
+
+    # Urgent: Please migrate this to .env, use secrets/vaults and vars/configs.
     environment:
-      MYSQL_DB_URL: jdbc:mysql://mysql:3306/test?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
-      MYSQL_DB_USERNAME: root
-      MYSQL_DB_PASSWORD: root
+      MYSQL_URL: oneauth-mysql
+      MYSQL_PORT: 3306
+      MYSQL_ONEAUTH_USERNAME: root # secret
+      MYSQL_ONEAUTH_PASSWORD: root # secret
+      MYSQL_ONEAUTH_DB_NAME: oneauth-db
+
+      # Secrets. These are the dev Public-Private Key pair. DO NOT USE THIS FOR PRODUCTION !
+      "JWT_PRIVATE_KEY_B64": |-
+        -----BEGIN PRIVATE KEY-----
+        MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCr58JjLeRkVUCE
+        Qc8Dj2NjMZ3HsLb/egbrwskgW8LYIaeA2dRBTMgR8B/sDb2k8x5xjg/sYgINM0/b
+        XRR7W5GMs4gPCvw0EzsPk6SG8wN6kkVkiCX+YL/9nx9fdg9uqsgSe/xjLtBYN/yg
+        VQTzWWDCU3AAc5LpAFpVCJSkhGM9RLlqXwAUOxTutKHObaCjSpcEhLefYlxukHVU
+        zFVwfxPyk/KesL3iX7OaibGkksEjWojXMYHWGdcSqoA86IFEhg0ly//+p/OlnOyL
+        JWhcbzL+jqw9FaXnmntgrcyVhqdAGmVH+Vp4ATT8kStshUxl8yEbMrpovbcdmAGf
+        P075+kcVAgMBAAECggEAGf1WzABY9ptV/vjlF6Ry0gEjGdj7fcoA6F2BY2lEHsGN
+        zcMBHmNBn0amyN019g2EpYXlHeeeaEkA8okSyuin63YMJLwUL7pVlFAN0JJGjR42
+        rBGSbvBJLorDZz8V67UZvQOuP3+JI8FJKiNYdYMmiBKtzP+sLxpszczXjjzutQki
+        X0Xhk+N/45vP3lJkfybik7tP9aHzgyfEzDLxvSHSMeeE32L3qW7P3L5//j3P+/h+
+        S/LuDo0YgIv19VnSn6FgCgQt6oDy/v4fvENZHi56NFMXfE7Pn9m5VYJfgvy/ymgM
+        tPqJhGPe++CKQBRmIPq7NYv0/rwfvJ/WUxKHLNpRkQKBgQDn+rhoI8qdnXV7N/vs
+        Y/s5NYcKxBHFg/9TF5j1v0TLHwQQzkqQkgt72zsbn4afvdtFOeR5g09kQc4oj9iZ
+        W7tHlsMGxK1ib5tHd5uJ9+KXM5Hu/UuHWPIw1Gn8XlY8w+/O0waWOJ3mcCXovlQ0
+        t/k0twnHdGWI4O/uBRDge9IPkQKBgQC9tJpyjxb6jcwNv5OTH4BPDx1pPheYfvyx
+        0qfDzxSyLyEmdYcjKzpGtJuHcqWQfrVNR2z0PE8Cti9WYfCpwMiO6omtFh7UXOue
+        it8M0+Dv7Gmqrm99vkXFDgNjWtFx1o4SA+5DvGjsVeBYIOkwZVhv2x2tMigSn6Y5
+        XY78GIpFRQKBgG+b/hsElVgtyLcm4UsDc3w716QDX3WDI1Wr9cjOZF/BpWgciF10
+        FphZit+oadHzO0rcJqOb3Jek3XZAdvqZ2sn/rAdWmwDQJ4pD7o57uAX9JsowDaWp
+        0qRRnkhwbtc/geIlP3cI+FdFP8fxwnu2w+xr4AWZZ7xqVKVUxKDskc0xAoGBAKCj
+        9sVbddHlkQ1zVLwYyMYpvnYIJmLz5XePMpEVIilgz2mJzE1zpX2KIsmnw5uAMHao
+        LRMEnsNlEuDLPsgAf9TFtp/jQ2gA52Txo79xC+EfCLuHytFn9hzPqP7RQNptHREU
+        Uwb43MCEV91IwS5CI4lUuuSWvGhI2LFrEFFZVn0hAoGBAOJOd5St8hpYp868U/3M
+        WLLT2sho30Z628Bh+lwI88Vi9xo2qJQmu2FM/C3tqj/Wx+K5Hkf1uklTSXYtbek5
+        Z/jzSvh/zU3y41tdXMpxglyquvRkhGhVQndJzxNSobQh/NdU8+Fxj/WYX0Qnj/EL
+        Vv6P2Iu8zL/iDsBPfZGjGK3z
+        -----END PRIVATE KEY-----
+      "JWT_PUBLIC_KEY_B64": |-
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq+fCYy3kZFVAhEHPA49j
+        YzGdx7C2/3oG68LJIFvC2CGngNnUQUzIEfAf7A29pPMecY4P7GICDTNP210Ue1uR
+        jLOIDwr8NBM7D5OkhvMDepJFZIgl/mC//Z8fX3YPbqrIEnv8Yy7QWDf8oFUE81lg
+        wlNwAHOS6QBaVQiUpIRjPUS5al8AFDsU7rShzm2go0qXBIS3n2JcbpB1VMxVcH8T
+        8pPynrC94l+zmomxpJLBI1qI1zGB1hnXEqqAPOiBRIYNJcv//qfzpZzsiyVoXG8y
+        /o6sPRWl55p7YK3MlYanQBplR/laeAE0/JErbIVMZfMhGzK6aL23HZgBnz9O+fpH
+        FQIDAQAB
+        -----END PUBLIC KEY-----
+
+      JWT_EXPIRATION_DURATION: 1d
+
+      # OAuth secrets
+      GOOGLE_CLIENT_ID: your-google-client-id
+      GOOGLE_CLIENT_SECRET: your-google-client-secret
+      FACEBOOK_CLIENT_ID: your-facebook-client-id
+      FACEBOOK_CLIENT_SECRET: your-facebook-client-secret
+      GITHUB_CLIENT_ID: your-github-client-id
+      GITHUB_CLIENT_SECRET: your-github-client-secret
+
+      OAUTH2_AUTHORIZED_REDIRECT_URIS: http://localhost:8080,http://localhost:4200
+
+      # App vars
+      APP_EMAIL: example@gmail.com
+      APP_ALLOWED_ORIGINS: http://localhost:8080,http://localhost:4200
+      OAUTH2_COOKIE_EXPIRE_SECONDS: 120
+      DEFAULT_PAGE_START: 0
+      DEFAULT_PAGE_SIZE: 50
+
     ports:
       - "8080:8080"
+    volumes:
+      - m2-cache:/Users/ashrawan/.m2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+
+volumes:
+  mysql_data:
+  # DELETE m2 cache volume for clean docker build
+  m2-cache:
+
+networks:
+  default:
+    driver: bridge

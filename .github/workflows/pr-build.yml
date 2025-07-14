@@ -4,52 +4,85 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ opened, synchronize, reopened ]
 
 env:
-  AWS_REGION: us-east-1
-  ECR_REPOSITORY_APP: one-auth-app
-  ECR_REPOSITORY_JAR: one-auth-jar
-  IMAGE_TAG: ${{ github.run_number }}
+  AWS_REGION:        ${{ vars.AWS_REGION }}
+  ECR_REGISTRY:      ${{ vars.ECR_REGISTRY }}
+  ECR_REPOSITORY_APP: ${{ vars.ECR_REPOSITORY_APP }}
+  S3_MAVEN_BUCKET:   ${{ vars.S3_MAVEN_BUCKET }}
+  IMAGE_TAG:         ${{ github.run_number }}
 
 jobs:
-  build-and-push:
+  build-and-publish:
     runs-on: ubuntu-latest
-    env:
-      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
       - name: Build with Maven
         run: mvn -B -DskipTests package
 
-      - name: Build Docker images
+      - name: Build Docker image
         run: |
-          docker build -t $ECR_REPOSITORY_APP:$IMAGE_TAG -f Dockerfile .
-          docker build -t $ECR_REPOSITORY_JAR:$IMAGE_TAG -f one-auth-jar/Dockerfile .
+          docker build \
+            -t $ECR_REPOSITORY_APP:$IMAGE_TAG \
+            -f Dockerfile \
+            .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region:            ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        run: aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-
-      - name: Tag images
         run: |
-          docker tag $ECR_REPOSITORY_APP:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_APP:$IMAGE_TAG
-          docker tag $ECR_REPOSITORY_JAR:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_JAR:$IMAGE_TAG
+          aws ecr get-login-password \
+            --region $AWS_REGION \
+          | docker login \
+            --username AWS \
+            --password-stdin $ECR_REGISTRY
 
-      - name: Push images
+      - name: Tag & Push Docker image
         run: |
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY_APP:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY_JAR:$IMAGE_TAG
+          docker tag \
+            $ECR_REPOSITORY_APP:$IMAGE_TAG \
+            $ECR_REGISTRY/$ECR_REPOSITORY_APP:$IMAGE_TAG
+          docker push \
+            $ECR_REGISTRY/$ECR_REPOSITORY_APP:$IMAGE_TAG
+
+      - name: Publish one-auth-jar to S3 Maven repo
+        run: |
+          # Navigate to the jar module
+          cd one-auth-jar
+
+          # Read Maven coordinates
+          GROUP_ID=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout)
+          ARTIFACT_ID=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+
+          # Compute S3 path: com/oneaccess/auth/one-auth-jar/0.0.1-SNAPSHOT/
+          REPO_PATH=${GROUP_ID//./\/}/${ARTIFACT_ID}/${VERSION}
+
+          echo "Uploading ${ARTIFACT_ID}-${VERSION} to s3://${S3_MAVEN_BUCKET}/${REPO_PATH}/"
+
+          # Copy the built JAR
+          aws s3 cp \
+            target/${ARTIFACT_ID}-${VERSION}.jar \
+            s3://${S3_MAVEN_BUCKET}/${REPO_PATH}/ \
+            --region $AWS_REGION
+
+          # Copy the POM (rename to artifact-version.pom)
+          aws s3 cp \
+            pom.xml \
+            s3://${S3_MAVEN_BUCKET}/${REPO_PATH}/${ARTIFACT_ID}-${VERSION}.pom \
+            --region $AWS_REGION

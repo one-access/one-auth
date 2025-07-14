@@ -1,4 +1,4 @@
-package com.oneaccess.auth.springcustomizedstarterexample.config;
+package com.oneaccess.auth.config;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

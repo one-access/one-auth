@@ -1,12 +1,19 @@
-package com.oneaccess.auth.springcustomizedstarterexample.entities.example;
+package com.oneaccess.auth.entities.example;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "example_table")
 public class ExampleEntity {
 
     @Id
@@ -15,7 +22,7 @@ public class ExampleEntity {
     @Column(name = "ID")
     private String id;
 
-    @Column(name = "is_flying_bird", columnDefinition = "NUMBER(1,0)")
+    @Column(name = "is_flying_bird", columnDefinition = "BOOLEAN")
     @Convert(converter = BooleanConverter.class)
     private boolean isFlyingBird;
 

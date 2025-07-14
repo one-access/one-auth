@@ -1,6 +1,6 @@
-package com.oneaccess.auth.springcustomizedstarterexample.utils;
+package com.oneaccess.auth.utils;
 
-import com.oneaccess.auth.springcustomizedstarterexample.utils.exceptions.CustomAppException;
+import com.oneaccess.auth.utils.exceptions.CustomAppException;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 

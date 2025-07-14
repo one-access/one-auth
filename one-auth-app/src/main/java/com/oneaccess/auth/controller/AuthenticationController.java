@@ -1,15 +1,15 @@
-package com.oneaccess.auth.springcustomizedstarterexample.controller;
+package com.oneaccess.auth.controller;
 
-import com.oneaccess.auth.springcustomizedstarterexample.services.auth.AuthenticationService;
-import com.oneaccess.auth.springcustomizedstarterexample.services.auth.dtos.AuthResponseDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.auth.dtos.LoginRequestDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.auth.dtos.RegisterUserRequestDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.common.GenericResponseDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.UserService;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.ForgotPasswordRequestDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.ResetPasswordRequestDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.UserDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.VerifyEmailRequestDTO;
+import com.oneaccess.auth.services.auth.AuthenticationService;
+import com.oneaccess.auth.services.auth.dtos.AuthResponseDTO;
+import com.oneaccess.auth.services.auth.dtos.LoginRequestDTO;
+import com.oneaccess.auth.services.auth.dtos.RegisterUserRequestDTO;
+import com.oneaccess.auth.services.common.GenericResponseDTO;
+import com.oneaccess.auth.services.webapp.user.UserService;
+import com.oneaccess.auth.services.webapp.user.dto.ForgotPasswordRequestDTO;
+import com.oneaccess.auth.services.webapp.user.dto.ResetPasswordRequestDTO;
+import com.oneaccess.auth.services.webapp.user.dto.UserDTO;
+import com.oneaccess.auth.services.webapp.user.dto.VerifyEmailRequestDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.oneaccess.auth.springcustomizedstarterexample.services.mail;
+package com.oneaccess.auth.services.mail;
 
 import java.util.Collections;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package com.oneaccess.auth.springcustomizedstarterexample.utils.exceptions;
+package com.oneaccess.auth.utils.exceptions;
 
 public final class AppExceptionConstants {
 

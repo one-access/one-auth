@@ -1,17 +1,18 @@
-package com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user;
+package com.oneaccess.auth.services.webapp.user;
 
-import com.oneaccess.auth.springcustomizedstarterexample.config.AppProperties;
-import com.oneaccess.auth.springcustomizedstarterexample.entities.UserEntity;
-import com.oneaccess.auth.springcustomizedstarterexample.repository.UserRepository;
-import com.oneaccess.auth.springcustomizedstarterexample.security.AppSecurityUtils;
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.SecurityEnums;
-import com.oneaccess.auth.springcustomizedstarterexample.services.common.GenericResponseDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.mail.EmailService;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.*;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.AppUtils;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.exceptions.AppExceptionConstants;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.exceptions.BadRequestException;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.exceptions.ResourceNotFoundException;
+import com.oneaccess.auth.config.AppProperties;
+import com.oneaccess.auth.entities.UserEntity;
+import com.oneaccess.auth.repository.UserRepository;
+import com.oneaccess.auth.security.AppSecurityUtils;
+import com.oneaccess.auth.security.oauth.common.SecurityEnums;
+import com.oneaccess.auth.services.common.GenericResponseDTO;
+import com.oneaccess.auth.services.mail.EmailService;
+import com.oneaccess.auth.services.webapp.user.dto.*;
+import com.oneaccess.auth.utils.AppUtils;
+import com.oneaccess.auth.utils.exceptions.AppExceptionConstants;
+import com.oneaccess.auth.utils.exceptions.BadRequestException;
+import com.oneaccess.auth.utils.exceptions.CustomAppException;
+import com.oneaccess.auth.utils.exceptions.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -113,7 +114,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException(AppExceptionConstants.USER_RECORD_NOT_FOUND));
         String verificationCode = AppUtils.generateRandomAlphaNumericString(20);
-        long verificationCodeExpirationSeconds = appProperties.getMail().getVerificationCodeExpirationSeconds();
+        long verificationCodeExpirationSeconds = appProperties.getMail().getVerificationCodeExpirationSeconds().getSeconds();
         userEntity.setVerificationCodeExpiresAt(Instant.now().plusSeconds(verificationCodeExpirationSeconds));
         userEntity.setVerificationCode(verificationCode);
         MultiValueMap<String, String> appendQueryParamsToVerificationLink = constructEmailVerificationLinkQueryParams(
@@ -131,7 +132,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findByEmail(forgotPasswordRequestDTO.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException(AppExceptionConstants.USER_EMAIL_NOT_AVAILABLE));
         String forgotPasswordVerCode = AppUtils.generateRandomAlphaNumericString(20);
-        long verificationCodeExpirationSeconds = appProperties.getMail().getVerificationCodeExpirationSeconds();
+        long verificationCodeExpirationSeconds = appProperties.getMail().getVerificationCodeExpirationSeconds().getSeconds();
         userEntity.setVerificationCodeExpiresAt(Instant.now().plusSeconds(verificationCodeExpirationSeconds));
         userEntity.setVerificationCode(forgotPasswordVerCode);
         MultiValueMap<String, String> appendQueryParamsToPasswordResetLink = constructPasswordResetLinkQueryParams(
@@ -182,9 +183,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public GenericResponseDTO<Boolean> updatePassword(UpdatePasswordRequestDTO updatePasswordRequest) {
-        UserEntity userEntity = userRepository.findById(updatePasswordRequest.getUserId())
+        Long currentUserId = AppSecurityUtils.getCurrentUserId()
+            .orElseThrow(() -> new CustomAppException(AppExceptionConstants.UNAUTHORIZED_ACCESS));
+        UserEntity userEntity = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException(AppExceptionConstants.USER_RECORD_NOT_FOUND));
-        boolean passwordMatches = passwordEncoder.matches(updatePasswordRequest.getOldPassword(), userEntity.getPassword());
+        boolean passwordMatches = passwordEncoder.matches(updatePasswordRequest.getCurrentPassword(), userEntity.getPassword());
         if (!passwordMatches) {
             throw new BadRequestException(AppExceptionConstants.OLD_PASSWORD_DOESNT_MATCH);
         }

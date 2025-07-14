@@ -1,6 +1,6 @@
-package com.oneaccess.auth.springcustomizedstarterexample.security;
+package com.oneaccess.auth.security;
 
-import com.oneaccess.auth.springcustomizedstarterexample.entities.UserEntity;
+import com.oneaccess.auth.entities.UserEntity;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;

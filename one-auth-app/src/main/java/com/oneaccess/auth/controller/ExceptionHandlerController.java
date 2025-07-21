@@ -1,8 +1,8 @@
-package com.oneaccess.auth.springcustomizedstarterexample.controller;
+package com.oneaccess.auth.controller;
 
-import com.oneaccess.auth.springcustomizedstarterexample.services.common.GenericResponseDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.exceptions.CustomAppException;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.exceptions.ResourceNotFoundException;
+import com.oneaccess.auth.services.common.GenericResponseDTO;
+import com.oneaccess.auth.utils.exceptions.CustomAppException;
+import com.oneaccess.auth.utils.exceptions.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Slf4j
 @ControllerAdvice

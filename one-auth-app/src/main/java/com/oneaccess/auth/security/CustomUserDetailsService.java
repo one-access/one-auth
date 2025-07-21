@@ -1,8 +1,8 @@
-package com.oneaccess.auth.springcustomizedstarterexample.security;
+package com.oneaccess.auth.security;
 
-import com.oneaccess.auth.springcustomizedstarterexample.entities.UserEntity;
-import com.oneaccess.auth.springcustomizedstarterexample.repository.UserRepository;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.exceptions.AppExceptionConstants;
+import com.oneaccess.auth.entities.UserEntity;
+import com.oneaccess.auth.repository.UserRepository;
+import com.oneaccess.auth.utils.exceptions.AppExceptionConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

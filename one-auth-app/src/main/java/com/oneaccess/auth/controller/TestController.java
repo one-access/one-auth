@@ -1,4 +1,4 @@
-package com.oneaccess.auth.springcustomizedstarterexample.controller;
+package com.oneaccess.auth.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

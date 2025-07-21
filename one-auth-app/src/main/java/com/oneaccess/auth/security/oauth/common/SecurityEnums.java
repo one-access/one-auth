@@ -1,4 +1,4 @@
-package com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common;
+package com.oneaccess.auth.security.oauth.common;
 
 public class SecurityEnums {
 

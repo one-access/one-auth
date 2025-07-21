@@ -1,10 +1,10 @@
-package com.oneaccess.auth.springcustomizedstarterexample.controller;
+package com.oneaccess.auth.controller;
 
-import com.oneaccess.auth.springcustomizedstarterexample.security.AppSecurityUtils;
-import com.oneaccess.auth.springcustomizedstarterexample.services.common.GenericResponseDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.UserService;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.UpdatePasswordRequestDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.UserDTO;
+import com.oneaccess.auth.security.AppSecurityUtils;
+import com.oneaccess.auth.services.common.GenericResponseDTO;
+import com.oneaccess.auth.services.webapp.user.UserService;
+import com.oneaccess.auth.services.webapp.user.dto.UpdatePasswordRequestDTO;
+import com.oneaccess.auth.services.webapp.user.dto.UserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;

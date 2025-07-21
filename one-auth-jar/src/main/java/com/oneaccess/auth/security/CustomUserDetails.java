@@ -1,4 +1,4 @@
-package com.swa.proj3commonmodule.security;
+package com.oneaccess.auth.security;
 
 import com.swa.proj3commonmodule.security.enums.UserRole;
 import lombok.Getter;

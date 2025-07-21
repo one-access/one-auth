@@ -1,7 +1,7 @@
-package com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user;
+package com.oneaccess.auth.services.webapp.user;
 
-import com.oneaccess.auth.springcustomizedstarterexample.services.common.GenericResponseDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.*;
+import com.oneaccess.auth.services.common.GenericResponseDTO;
+import com.oneaccess.auth.services.webapp.user.dto.*;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -36,5 +36,4 @@ public interface UserService {
     GenericResponseDTO<Boolean> userEmailExists(String email);
 
     GenericResponseDTO<Boolean> updatePassword(UpdatePasswordRequestDTO updatePasswordRequest);
-
 }

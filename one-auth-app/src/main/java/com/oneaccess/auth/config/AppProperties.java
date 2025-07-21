@@ -1,10 +1,13 @@
-package com.oneaccess.auth.springcustomizedstarterexample.config;
+package com.oneaccess.auth.config;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
+
+import java.time.Duration;
 
 @Validated
 @ConfigurationProperties(prefix = "myapp")
@@ -40,31 +43,31 @@ public class AppProperties {
 
     @Getter
     @Setter
+    @Data
     public static class Mail {
         private String defaultEmailAddress;
-        private long verificationCodeExpirationSeconds = 600; // 10 minutes
+        private Duration verificationCodeExpirationSeconds = Duration.ofMinutes(10);
     }
 
     @Getter
     @Setter
+    @Data
     public static class Cors {
 
         private String[] allowedOrigins;
         private String[] allowedMethods = {"GET", "POST", "PUT", "DELETE", "OPTIONS"};
         private String[] allowedHeaders = {"*"};
         private String[] exposedHeaders = {"*"};
-        private long maxAge = 3600L;
+        private Duration maxAge = Duration.ofSeconds(3600);
     }
 
     @Getter
     @Setter
+    @Data
     public static class Jwt {
-
-        private String privateKey;
-        private String publicKey;
-        private long expirationMillis = 864000000L; // 10 days
-        // For short-lived tokens and cookies
-        private int shortLivedMillis = 120000; // Two minutes
+        private String privateKeyB64;
+        private String publicKeyB64;
+        private Duration expiration;
     }
 
     @Getter
@@ -76,6 +79,7 @@ public class AppProperties {
 
     @Getter
     @Setter
+    @Data
     public static class Defaults {
         private int defaultPageStart = 0;
         private int defaultPageSize = 50;

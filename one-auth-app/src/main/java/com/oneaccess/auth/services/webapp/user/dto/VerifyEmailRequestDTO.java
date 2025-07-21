@@ -1,6 +1,6 @@
-package com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto;
+package com.oneaccess.auth.services.webapp.user.dto;
 
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.SecurityEnums;
+import com.oneaccess.auth.security.oauth.common.SecurityEnums;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 

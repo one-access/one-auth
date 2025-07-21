@@ -1,6 +1,6 @@
-package com.oneaccess.auth.springcustomizedstarterexample.config;
+package com.oneaccess.auth.config;
 
-import com.oneaccess.auth.springcustomizedstarterexample.utils.StringToEnumConverter;
+import com.oneaccess.auth.utils.StringToEnumConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.PageRequest;

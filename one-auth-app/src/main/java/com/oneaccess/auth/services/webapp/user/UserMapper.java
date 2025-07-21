@@ -1,25 +1,19 @@
-package com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user;
+package com.oneaccess.auth.services.webapp.user;
 
-import com.oneaccess.auth.springcustomizedstarterexample.entities.UserEntity;
-import com.oneaccess.auth.springcustomizedstarterexample.services.common.GenericMapper;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.UserDTO;
+import com.oneaccess.auth.entities.UserEntity;
+import com.oneaccess.auth.services.webapp.user.dto.UserDTO;
 import org.mapstruct.Mapper;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public interface UserMapper extends GenericMapper<UserDTO, UserEntity> {
+public interface UserMapper {
 
-    @Override
     UserEntity toEntity(UserDTO dto);
 
-    @Override
     UserDTO toDto(UserEntity entity);
 
-    @Override
     List<UserEntity> toEntityList(List<UserDTO> list);
 
-    @Override
     List<UserDTO> toDtoList(List<UserEntity> list);
-
 }

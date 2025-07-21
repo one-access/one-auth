@@ -1,11 +1,12 @@
-package com.oneaccess.auth.springcustomizedstarterexample.security;
+package com.oneaccess.auth.security;
 
-import com.oneaccess.auth.springcustomizedstarterexample.config.AppProperties;
-import com.oneaccess.auth.springcustomizedstarterexample.entities.UserEntity;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.UserMapper;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.UserDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.AppUtils;
+import com.oneaccess.auth.config.AppProperties;
+import com.oneaccess.auth.entities.UserEntity;
+import com.oneaccess.auth.services.webapp.user.UserMapper;
+import com.oneaccess.auth.services.webapp.user.dto.UserDTO;
+import com.oneaccess.auth.utils.AppUtils;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -15,16 +16,14 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.KeyFactory;
+import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -51,34 +50,24 @@ public class JWTTokenProvider {
     @PostConstruct
     protected void init() {
         try {
-            privateKey = loadPrivateKey(appProperties.getJwt().getPrivateKey());
-            publicKey = loadPublicKey(appProperties.getJwt().getPublicKey());
+            String privateKeyB64 = appProperties.getJwt().getPrivateKeyB64();
+            String publicKeyB64 = appProperties.getJwt().getPublicKeyB64();
+            if (StringUtils.hasText(privateKeyB64) && StringUtils.hasText(publicKeyB64) ) {
+                log.info("Loading RSA key pair from Base64 properties");
+                privateKey = SecurityUtils.loadPrivateKey(privateKeyB64);
+                publicKey = SecurityUtils.loadPublicKey(publicKeyB64);
+            } else {
+                log.warn("--- DEV MODE --- privateKeyB64 not set. Generating new RSA key pair");
+                KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+                kpg.initialize(2048);
+                KeyPair kp = kpg.generateKeyPair();
+                privateKey = kp.getPrivate();
+                publicKey = kp.getPublic();
+            }
         } catch (Exception e) {
-            throw new IllegalStateException("Unable to load JWT keys", e);
+            throw new IllegalStateException("Unable to load or generate JWT keys", e);
         }
-        validityInMilliseconds = appProperties.getJwt().getExpirationMillis();
-    }
-
-    private PrivateKey loadPrivateKey(String keyPem) throws Exception {
-        String key = keyPem
-                .replaceAll("-----BEGIN (.*)-----", "")
-                .replaceAll("-----END (.*)-----", "")
-                .replaceAll("\n", "");
-        byte[] decoded = Base64.getDecoder().decode(key);
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        return kf.generatePrivate(spec);
-    }
-
-    private PublicKey loadPublicKey(String keyPem) throws Exception {
-        String key = keyPem
-                .replaceAll("-----BEGIN (.*)-----", "")
-                .replaceAll("-----END (.*)-----", "")
-                .replaceAll("\n", "");
-        byte[] decoded = Base64.getDecoder().decode(key);
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        return kf.generatePublic(spec);
+        validityInMilliseconds = appProperties.getJwt().getExpiration().toMillis();
     }
 
     public String createJWTToken(Authentication authentication) {

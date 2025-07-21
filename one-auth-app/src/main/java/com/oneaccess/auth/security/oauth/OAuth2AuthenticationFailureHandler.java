@@ -1,20 +1,20 @@
-package com.oneaccess.auth.springcustomizedstarterexample.security.oauth;
+package com.oneaccess.auth.security.oauth;
 
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.HttpCookieOAuth2AuthorizationRequestRepository;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.AppWebUtils;
+import com.oneaccess.auth.security.oauth.common.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.oneaccess.auth.utils.AppWebUtils;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.OAuth2Util.REDIRECT_URI_PARAM_COOKIE_NAME;
+import static com.oneaccess.auth.security.oauth.common.OAuth2Util.REDIRECT_URI_PARAM_COOKIE_NAME;
 
 /**
  * 1. Flow comes here "onAuthenticationFailure()", If OAuth2 Authentication Fails from - CustomOAuth2UserService

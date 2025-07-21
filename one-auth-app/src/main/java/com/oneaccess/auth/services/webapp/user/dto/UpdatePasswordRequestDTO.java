@@ -1,16 +1,23 @@
-package com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto;
+package com.oneaccess.auth.services.webapp.user.dto;
 
-import com.sun.istack.NotNull;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UpdatePasswordRequestDTO {
 
-    private Long userId;
+    @NotNull(message = "Current password cannot be null")
+    private String currentPassword;
 
-    @NotNull
-    private String oldPassword;
-
-    @NotNull
+    @NotNull(message = "New password cannot be null")
     private String newPassword;
+
+    @NotNull(message = "Confirm password cannot be null")
+    private String confirmPassword;
 }

@@ -1,4 +1,4 @@
-package com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto;
+package com.oneaccess.auth.services.webapp.user.dto;
 
 import lombok.Data;
 

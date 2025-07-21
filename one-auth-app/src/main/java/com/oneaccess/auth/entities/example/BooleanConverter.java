@@ -1,7 +1,7 @@
-package com.oneaccess.auth.springcustomizedstarterexample.entities.example;
+package com.oneaccess.auth.entities.example;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
 public class BooleanConverter implements AttributeConverter<Boolean, Integer> {
@@ -14,22 +14,11 @@ public class BooleanConverter implements AttributeConverter<Boolean, Integer> {
 
     @Override
     public Integer convertToDatabaseColumn(Boolean attribute) {
-        if (null == attribute) {
-            return null;
-        }
-        if (Boolean.TRUE.equals(attribute)) {
-            return ONE;
-        } else {
-            return ZERO;
-        }
+        return attribute != null && attribute ? 1 : 0;
     }
 
     @Override
     public Boolean convertToEntityAttribute(Integer dbData) {
-        if (null == dbData) {
-            return null;
-        }
-        return ONE.equals(dbData);
+        return dbData != null && dbData == 1;
     }
-
 }

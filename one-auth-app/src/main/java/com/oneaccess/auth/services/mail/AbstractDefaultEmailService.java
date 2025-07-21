@@ -1,17 +1,16 @@
-package com.oneaccess.auth.springcustomizedstarterexample.services.mail;
+package com.oneaccess.auth.services.mail;
 
 import freemarker.template.Template;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -35,14 +34,15 @@ public abstract class AbstractDefaultEmailService {
                                   String subject,
                                   String text) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(defaultSourceEmailAddress);
-            message.setTo(destinationEmail);
-            message.setSubject(subject);
-            message.setText(text);
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setFrom(defaultSourceEmailAddress);
+            helper.setTo(destinationEmail);
+            helper.setSubject(subject);
+            helper.setText(text, true);
 
             javaMailSender.send(message);
-        } catch (MailException e) {
+        } catch (MessagingException | MailException e) {
             log.error("sendSimpleMessage failed MessagingException {} ", e.getMessage());
         }
     }
@@ -51,14 +51,7 @@ public abstract class AbstractDefaultEmailService {
                                                String subject,
                                                String templateText,
                                                String... templateModel) {
-        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-        simpleMailMessage.setText(templateText);
-
-        // Sample Example
-        // templateText = "Hello \n%s\n, \n This is the default fallback test email template for you. \n Send By: %s \n";
-        // String[] templateModel = { "TestUser", "Spring-boot-app" };
-
-        String text = String.format(simpleMailMessage.getText(), templateModel);
+        String text = String.format(templateText, templateModel);
         sendSimpleMessage(destinationEmail, subject, text);
     }
 
@@ -73,7 +66,7 @@ public abstract class AbstractDefaultEmailService {
             helper.setFrom(defaultSourceEmailAddress);
             helper.setTo(destinationEmail);
             helper.setSubject(subject);
-            helper.setText(text);
+            helper.setText(text, true);
 
             FileSystemResource file = new FileSystemResource(new File(pathToAttachment));
             helper.addAttachment(attachmentFilename, file);

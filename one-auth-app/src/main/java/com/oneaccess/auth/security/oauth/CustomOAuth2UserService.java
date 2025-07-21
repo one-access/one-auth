@@ -1,14 +1,14 @@
-package com.oneaccess.auth.springcustomizedstarterexample.security.oauth;
+package com.oneaccess.auth.security.oauth;
 
-import com.oneaccess.auth.springcustomizedstarterexample.entities.UserEntity;
-import com.oneaccess.auth.springcustomizedstarterexample.security.AppSecurityUtils;
-import com.oneaccess.auth.springcustomizedstarterexample.security.CustomUserDetails;
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.CustomAbstractOAuth2UserInfo;
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.OAuth2Util;
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.SecurityEnums;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.UserMapper;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.UserService;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.UserDTO;
+import com.oneaccess.auth.entities.UserEntity;
+import com.oneaccess.auth.security.AppSecurityUtils;
+import com.oneaccess.auth.security.CustomUserDetails;
+import com.oneaccess.auth.security.oauth.common.CustomAbstractOAuth2UserInfo;
+import com.oneaccess.auth.security.oauth.common.OAuth2Util;
+import com.oneaccess.auth.security.oauth.common.SecurityEnums;
+import com.oneaccess.auth.services.webapp.user.UserMapper;
+import com.oneaccess.auth.services.webapp.user.UserService;
+import com.oneaccess.auth.services.webapp.user.dto.UserDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;

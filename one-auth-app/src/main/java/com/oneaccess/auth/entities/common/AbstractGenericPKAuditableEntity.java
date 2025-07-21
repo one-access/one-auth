@@ -1,6 +1,11 @@
-package com.oneaccess.auth.springcustomizedstarterexample.entities.common;
+package com.oneaccess.auth.entities.common;
 
-import com.oneaccess.auth.springcustomizedstarterexample.entities.UserEntity;
+import com.oneaccess.auth.entities.UserEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
@@ -10,7 +15,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.lang.Nullable;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -18,7 +22,7 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-public abstract class AbstractGenericPKAuditableEntity<PK extends Serializable> extends AbstractGenericPrimaryKey<PK> {
+public abstract class AbstractGenericPKAuditableEntity<PK extends Serializable> extends AbstractGenericPrimaryKey<PK> implements Serializable {
 
     @Nullable
     @CreatedBy

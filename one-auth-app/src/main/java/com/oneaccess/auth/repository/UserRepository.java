@@ -1,7 +1,7 @@
-package com.oneaccess.auth.springcustomizedstarterexample.repository;
+package com.oneaccess.auth.repository;
 
-import com.oneaccess.auth.springcustomizedstarterexample.entities.UserEntity;
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.SecurityEnums;
+import com.oneaccess.auth.entities.UserEntity;
+import com.oneaccess.auth.security.oauth.common.SecurityEnums;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;

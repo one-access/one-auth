@@ -1,8 +1,8 @@
-package com.oneaccess.auth.springcustomizedstarterexample.entities.common;
+package com.oneaccess.auth.entities.common;
 
-import com.oneaccess.auth.springcustomizedstarterexample.entities.UserEntity;
-import com.oneaccess.auth.springcustomizedstarterexample.repository.UserRepository;
-import com.oneaccess.auth.springcustomizedstarterexample.security.AppSecurityUtils;
+import com.oneaccess.auth.entities.UserEntity;
+import com.oneaccess.auth.repository.UserRepository;
+import com.oneaccess.auth.security.AppSecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;

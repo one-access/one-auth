@@ -1,6 +1,6 @@
-package com.oneaccess.auth.springcustomizedstarterexample;
+package com.oneaccess.auth;
 
-import com.oneaccess.auth.springcustomizedstarterexample.config.AppProperties;
+import com.oneaccess.auth.config.AppProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

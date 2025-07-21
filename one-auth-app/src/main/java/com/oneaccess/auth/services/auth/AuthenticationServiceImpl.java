@@ -1,13 +1,13 @@
-package com.oneaccess.auth.springcustomizedstarterexample.services.auth;
+package com.oneaccess.auth.services.auth;
 
-import com.oneaccess.auth.springcustomizedstarterexample.security.JWTTokenProvider;
-import com.oneaccess.auth.springcustomizedstarterexample.security.oauth.common.SecurityEnums;
-import com.oneaccess.auth.springcustomizedstarterexample.services.auth.dtos.AuthResponseDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.auth.dtos.LoginRequestDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.auth.dtos.RegisterUserRequestDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.UserService;
-import com.oneaccess.auth.springcustomizedstarterexample.services.webapp.user.dto.UserDTO;
-import com.oneaccess.auth.springcustomizedstarterexample.utils.exceptions.AppExceptionConstants;
+import com.oneaccess.auth.security.JWTTokenProvider;
+import com.oneaccess.auth.security.oauth.common.SecurityEnums;
+import com.oneaccess.auth.services.auth.dtos.AuthResponseDTO;
+import com.oneaccess.auth.services.auth.dtos.LoginRequestDTO;
+import com.oneaccess.auth.services.auth.dtos.RegisterUserRequestDTO;
+import com.oneaccess.auth.services.webapp.user.UserService;
+import com.oneaccess.auth.services.webapp.user.dto.UserDTO;
+import com.oneaccess.auth.utils.exceptions.AppExceptionConstants;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;

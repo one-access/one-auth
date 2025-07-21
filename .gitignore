@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+.DS_Store
+**/.DS_Store
+
+# Sensitive
+keys/
+.env
+

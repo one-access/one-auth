@@ -2,7 +2,7 @@ package com.oneaccess.auth.entities.common;
 
 import com.oneaccess.auth.entities.UserEntity;
 import com.oneaccess.auth.repository.UserRepository;
-import com.oneaccess.auth.security.AppSecurityUtils;
+import com.oneaccess.authjar.utils.AppUserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;
@@ -18,8 +18,8 @@ public class AuditorAwareUserImpl implements AuditorAware<UserEntity> {
     @Override
     public Optional<UserEntity> getCurrentAuditor() {
         Optional<Long> optionalUserId = Optional
-                .ofNullable(AppSecurityUtils.getCurrentUserPrinciple())
-                .map(e -> e.getUserEntity().getId());
+                .ofNullable(AppUserUtil.getCurrentUserPrinciple())
+                .map(e -> e.getOneAuthUser().getId());
         Optional<UserEntity> userEntity = optionalUserId.map(userId -> userRepository.getById(userId));
         return userEntity;
     }

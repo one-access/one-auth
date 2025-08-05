@@ -28,12 +28,12 @@ public class AppProperties {
 
     // Mail config
     private Mail mail = new Mail();
+    
+    // Auth configuration
+    private Auth auth = new Auth();
 
     // CORS configuration
     private Cors cors = new Cors();
-
-    // JWT token generation related properties
-    private Jwt jwt = new Jwt();
 
     // Custom specific OAuth2 Properties
     private OAuth2 oAuth2 = new OAuth2();
@@ -41,12 +41,31 @@ public class AppProperties {
     // Custom Defaults App/Web/Rest/Misc Properties
     private Defaults defaults = new Defaults();
 
+    private DevConfig devConfig = new DevConfig();
+
+    // Cache configuration
+    private Cache cache = new Cache();
+
     @Getter
     @Setter
     @Data
     public static class Mail {
         private String defaultEmailAddress;
         private Duration verificationCodeExpirationSeconds = Duration.ofMinutes(10);
+    }
+    
+    @Getter
+    @Setter
+    @Data
+    public static class Auth {
+        private Email email = new Email();
+
+        @Getter
+        @Setter
+        @Data
+        public static class Email {
+            private boolean verRequiredForCustomSignup = true;
+        }
     }
 
     @Getter
@@ -63,15 +82,6 @@ public class AppProperties {
 
     @Getter
     @Setter
-    @Data
-    public static class Jwt {
-        private String privateKeyB64;
-        private String publicKeyB64;
-        private Duration expiration;
-    }
-
-    @Getter
-    @Setter
     public static class OAuth2 {
         private String[] authorizedRedirectOrigins;
         private int cookieExpireSeconds = 120; // Two minutes
@@ -83,6 +93,21 @@ public class AppProperties {
     public static class Defaults {
         private int defaultPageStart = 0;
         private int defaultPageSize = 50;
+    }
+
+    @Getter
+    @Setter
+    @Data
+    public static class DevConfig {
+        private boolean isEnabled;
+        private boolean disabledEmailSend;
+    }
+
+    @Getter
+    @Setter
+    @Data
+    public static class Cache {
+        private String type = "memory"; // memory, redis
     }
 
 }

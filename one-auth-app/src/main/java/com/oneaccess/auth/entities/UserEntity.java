@@ -1,8 +1,9 @@
 package com.oneaccess.auth.entities;
 
 import com.oneaccess.auth.entities.common.AbstractGenericPKAuditableEntity;
-import com.oneaccess.auth.security.oauth.common.SecurityEnums;
+import com.oneaccess.authjar.user.enums.ProviderEnums;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.oneaccess.authjar.user.OneAuthUser;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -51,7 +52,7 @@ public class UserEntity extends AbstractGenericPKAuditableEntity<Long> {
 
     @Column(name = "registered_provider_name")
     @Enumerated(EnumType.STRING)
-    private SecurityEnums.AuthProviderId registeredProviderName;
+    private ProviderEnums.AuthProviderId registeredProviderName;
 
     @Column(name = "registered_provider_id")
     private String registeredProviderId;
@@ -62,5 +63,20 @@ public class UserEntity extends AbstractGenericPKAuditableEntity<Long> {
 
     @Column(name = "verification_code_expires_at")
     private Instant verificationCodeExpiresAt;
+
+    public static OneAuthUser buildOneAuthUser(UserEntity userEntity) {
+        return OneAuthUser.builder()
+                .id(userEntity.getId())
+                .userUniqueId(userEntity.getEmail())
+                .fullName(userEntity.getFullName())
+                .email(userEntity.getEmail())
+                .password(userEntity.getPassword())
+                .isUserVerified(userEntity.isEmailVerified())
+                .imageUrl(userEntity.getImageUrl())
+                .roles(userEntity.getRoles())
+                .registeredProviderName(userEntity.getRegisteredProviderName() != null ? 
+                    userEntity.getRegisteredProviderName().toString() : ProviderEnums.AuthProviderId.app_custom_authentication.toString())
+                .build();
+    }
 
 }

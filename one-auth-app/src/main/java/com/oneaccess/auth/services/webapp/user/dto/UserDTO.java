@@ -1,6 +1,6 @@
 package com.oneaccess.auth.services.webapp.user.dto;
 
-import com.oneaccess.auth.security.oauth.common.SecurityEnums;
+import com.oneaccess.authjar.user.enums.ProviderEnums;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,7 +33,7 @@ public class UserDTO {
 
     private String phoneNumber;
 
-    private SecurityEnums.AuthProviderId registeredProviderName;
+    private ProviderEnums.AuthProviderId registeredProviderName;
 
     private String registeredProviderId;
 

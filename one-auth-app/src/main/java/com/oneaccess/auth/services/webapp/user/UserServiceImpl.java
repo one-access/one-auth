@@ -3,10 +3,10 @@ package com.oneaccess.auth.services.webapp.user;
 import com.oneaccess.auth.config.AppProperties;
 import com.oneaccess.auth.entities.UserEntity;
 import com.oneaccess.auth.repository.UserRepository;
-import com.oneaccess.auth.security.AppSecurityUtils;
-import com.oneaccess.auth.security.oauth.common.SecurityEnums;
+import com.oneaccess.authjar.utils.AppUserUtil;
+import com.oneaccess.authjar.user.enums.ProviderEnums;
 import com.oneaccess.auth.services.common.GenericResponseDTO;
-import com.oneaccess.auth.services.mail.EmailService;
+import com.oneaccess.auth.services.mail.DispatcherEmailService;
 import com.oneaccess.auth.services.webapp.user.dto.*;
 import com.oneaccess.auth.utils.AppUtils;
 import com.oneaccess.auth.utils.exceptions.AppExceptionConstants;
@@ -34,13 +34,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
-    private final EmailService emailService;
+    private final DispatcherEmailService emailService;
     private final AppProperties appProperties;
 
     public UserServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
                            UserMapper userMapper,
-                           EmailService emailService,
+                           DispatcherEmailService emailService,
                            AppProperties appProperties) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -80,9 +80,9 @@ public class UserServiceImpl implements UserService {
 //    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public UserDTO createUser(UserDTO requestUserDTO) {
         if (ObjectUtils.isEmpty(requestUserDTO.getRoles())) {
-            requestUserDTO.setRoles(Set.of(AppSecurityUtils.ROLE_DEFAULT));
+            requestUserDTO.setRoles(Set.of(AppUserUtil.ROLE_DEFAULT));
         }
-        boolean isFromCustomBasicAuth = SecurityEnums.AuthProviderId.app_custom_authentication
+        boolean isFromCustomBasicAuth = ProviderEnums.AuthProviderId.app_custom_authentication
                 .equals(requestUserDTO.getRegisteredProviderName());
         if (isFromCustomBasicAuth && requestUserDTO.getPassword() != null) {
             requestUserDTO.setPassword(passwordEncoder.encode(requestUserDTO.getPassword()));
@@ -92,8 +92,27 @@ public class UserServiceImpl implements UserService {
         if (existsByEmail) {
             throw new ResourceNotFoundException(AppExceptionConstants.USER_EMAIL_NOT_AVAILABLE);
         }
+        boolean shouldSendVerificationEmailForSignup = isFromCustomBasicAuth && appProperties.getAuth().getEmail().isVerRequiredForCustomSignup();
+
+        // Dev mode is enabled.
+        if(appProperties.getDevConfig().isEnabled() && appProperties.getDevConfig().isDisabledEmailSend()) {
+            userEntity.setEmailVerified(true);
+            userRepository.save(userEntity);
+            return userMapper.toDto(userEntity);
+        }
+
+        // Auto-verify if verification via social sign on or if the verificationRequired is disabled
+        if (!shouldSendVerificationEmailForSignup) {
+            userEntity.setEmailVerified(true);  // Auto-verify if verification not required
+        }
+
         userRepository.save(userEntity);
-        sendVerificationEmail(userEntity.getEmail());
+        
+        // Send verification email if e customAuth only if email is enabled
+        if (shouldSendVerificationEmailForSignup) {
+            sendVerificationEmail(userEntity.getEmail());
+        }
+        
         return userMapper.toDto(userEntity);
     }
 
@@ -102,8 +121,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findById(reqUserDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(AppExceptionConstants.USER_RECORD_NOT_FOUND));
         userEntity.setFullName(reqUserDTO.getFullName());
-        userEntity.setImageUrl(reqUserDTO.getImageUrl());
-        userEntity.setPhoneNumber(reqUserDTO.getPhoneNumber());
+        // userEntity.setDisplayName(reqUserDTO.getDisplayName())
         userRepository.save(userEntity);
         return userMapper.toDto(userEntity);
     }
@@ -117,12 +135,8 @@ public class UserServiceImpl implements UserService {
         long verificationCodeExpirationSeconds = appProperties.getMail().getVerificationCodeExpirationSeconds().getSeconds();
         userEntity.setVerificationCodeExpiresAt(Instant.now().plusSeconds(verificationCodeExpirationSeconds));
         userEntity.setVerificationCode(verificationCode);
-        MultiValueMap<String, String> appendQueryParamsToVerificationLink = constructEmailVerificationLinkQueryParams(
-                userEntity.getEmail(), verificationCode, userEntity.getRegisteredProviderName());
-        String fullName = userEntity.getFullName();
-        String firstName = fullName.contains(" ") ? fullName.split(" ", 2)[0] : fullName;
         userRepository.save(userEntity);
-        emailService.sendVerificationEmail(userEntity.getEmail(), firstName, appendQueryParamsToVerificationLink);
+        emailService.sendVerificationEmail(userEntity.getEmail());
         GenericResponseDTO<Boolean> genericResponseDTO = GenericResponseDTO.<Boolean>builder().response(true).build();
         return genericResponseDTO;
     }
@@ -135,12 +149,8 @@ public class UserServiceImpl implements UserService {
         long verificationCodeExpirationSeconds = appProperties.getMail().getVerificationCodeExpirationSeconds().getSeconds();
         userEntity.setVerificationCodeExpiresAt(Instant.now().plusSeconds(verificationCodeExpirationSeconds));
         userEntity.setVerificationCode(forgotPasswordVerCode);
-        MultiValueMap<String, String> appendQueryParamsToPasswordResetLink = constructPasswordResetLinkQueryParams(
-                userEntity.getEmail(), forgotPasswordVerCode);
-        String fullName = userEntity.getFullName();
-        String firstName = fullName.contains(" ") ? fullName.split(" ", 2)[0] : fullName;
         userRepository.save(userEntity);
-        emailService.sendPasswordResetEmail(userEntity.getEmail(), firstName, appendQueryParamsToPasswordResetLink);
+        emailService.sendPasswordResetEmail(userEntity.getEmail());
         GenericResponseDTO<Boolean> genericResponseDTO = GenericResponseDTO.<Boolean>builder().response(true).build();
         return genericResponseDTO;
     }
@@ -163,7 +173,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public GenericResponseDTO<Boolean> verifyAndProcessPasswordResetRequest(ResetPasswordRequestDTO resetPasswordRequestDTO) {
         Optional<UserEntity> optionalUserEntity = userRepository.verifyAndRetrieveForgotPasswordRequestUser(
-                resetPasswordRequestDTO.getEmail(), SecurityEnums.AuthProviderId.app_custom_authentication, resetPasswordRequestDTO.getForgotPasswordVerCode());
+                resetPasswordRequestDTO.getEmail(), ProviderEnums.AuthProviderId.app_custom_authentication, resetPasswordRequestDTO.getForgotPasswordVerCode());
         UserEntity userEntity = optionalUserEntity
                 .orElseThrow(() -> new ResourceNotFoundException(AppExceptionConstants.INVALID_PASSWORD_RESET_REQUEST));
         userEntity.setVerificationCodeExpiresAt(null);
@@ -183,7 +193,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public GenericResponseDTO<Boolean> updatePassword(UpdatePasswordRequestDTO updatePasswordRequest) {
-        Long currentUserId = AppSecurityUtils.getCurrentUserId()
+        Long currentUserId = AppUserUtil.getCurrentUserId()
             .orElseThrow(() -> new CustomAppException(AppExceptionConstants.UNAUTHORIZED_ACCESS));
         UserEntity userEntity = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException(AppExceptionConstants.USER_RECORD_NOT_FOUND));
@@ -198,7 +208,7 @@ public class UserServiceImpl implements UserService {
 
     private static MultiValueMap<String, String> constructEmailVerificationLinkQueryParams(String email,
                                                                                            String verificationCode,
-                                                                                           SecurityEnums.AuthProviderId authProvider) {
+                                                                                           ProviderEnums.AuthProviderId authProvider) {
         MultiValueMap<String, String> appendQueryParams = new LinkedMultiValueMap<>();
         // Generated QueryParams for the verification link, must sync with VerifyEmailRequestDTO
         appendQueryParams.add("email", email);

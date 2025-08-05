@@ -1,0 +1,76 @@
+name: PR Build Check
+
+on:
+  pull_request:
+    branches:
+      - master
+      - main
+
+env:
+  JAVA_VERSION: '17'
+  MAVEN_OPTS: '-Xmx2048m'
+
+jobs:
+  build-check:
+    name: Build Check
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('pom.xml', '*/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+            
+      - name: Validate Maven project
+        run: mvn validate
+        
+      - name: Compile project
+        run: mvn clean compile -DskipTests
+        
+      - name: Run Maven package (skip tests)
+        run: mvn package -DskipTests
+        
+      - name: Build Docker image (no push)
+        run: |
+          docker build -t one-auth:pr-${{ github.event.number }} .
+          docker images one-auth:pr-${{ github.event.number }}
+          
+      - name: Comment PR with build status
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ **Build Check Passed** - One-Auth application built successfully!'
+            })
+            
+      - name: Comment PR with build failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Build Check Failed** - Please check the build logs and fix the issues.'
+            })

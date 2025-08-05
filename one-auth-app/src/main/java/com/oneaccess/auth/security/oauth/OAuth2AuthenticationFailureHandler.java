@@ -1,6 +1,5 @@
 package com.oneaccess.auth.security.oauth;
 
-import com.oneaccess.auth.security.oauth.common.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.oneaccess.auth.utils.AppWebUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -40,7 +39,7 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
                 .queryParam("error", exception.getLocalizedMessage())
                 .build().toUriString();
 
-        httpCookieOAuth2AuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
+        httpCookieOAuth2AuthorizationRequestRepository.removeAllAuthorizationRequestCookies(request, response);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 }

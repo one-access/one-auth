@@ -1,0 +1,26 @@
+{
+  "auth-server": {
+    "keys": [
+      {
+        "kty": "RSA",
+        "use": "sig",
+        "alg": "RS256",
+        "kid": "test-kid",
+        "n": "rugy5zFhlDf2sJfyuHL0IPPhW_Ee-SPSEkt2Lm7bcVgfs2XFpvC0bLfKHL1O0NN04j03yaLowsqUpPFJQnRKHBIxdPYOZ17KNtBWUIPDAEu5-ggoMPni0lN3TARO8_DRQHxeY9Id_PDy1QZQxt172qCuHwVt2Lk1Tfmg5V_ZVx80jPG8yuwWPmamOSMNKJ_LJyxE7cskPjwRaKcElx1X_Pi4nNtYnr5PEc0MB6A27V5UFV2EoSsuvZX_0CEYCSPqgf-QciZdpjrRf5qvNtMRqbyHnGNcSwUZCD0T9DehYLC1t4rKgcLC9EAEetj8gaTSWYg7Fxu6sCuYteBQoHOgew",
+        "e": "AQAB"
+      }
+    ]
+  },
+  "test-app": {
+    "keys": [
+      {
+        "kty": "RSA",
+        "use": "sig",
+        "alg": "RS256",
+        "kid": "test-kid",
+        "n": "rugy5zFhlDf2sJfyuHL0IPPhW_Ee-SPSEkt2Lm7bcVgfs2XFpvC0bLfKHL1O0NN04j03yaLowsqUpPFJQnRKHBIxdPYOZ17KNtBWUIPDAEu5-ggoMPni0lN3TARO8_DRQHxeY9Id_PDy1QZQxt172qCuHwVt2Lk1Tfmg5V_ZVx80jPG8yuwWPmamOSMNKJ_LJyxE7cskPjwRaKcElx1X_Pi4nNtYnr5PEc0MB6A27V5UFV2EoSsuvZX_0CEYCSPqgf-QciZdpjrRf5qvNtMRqbyHnGNcSwUZCD0T9DehYLC1t4rKgcLC9EAEetj8gaTSWYg7Fxu6sCuYteBQoHOgew",
+        "e": "AQAB"
+      }
+    ]
+  }
+}

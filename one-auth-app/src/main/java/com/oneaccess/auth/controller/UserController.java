@@ -1,6 +1,6 @@
 package com.oneaccess.auth.controller;
 
-import com.oneaccess.auth.security.AppSecurityUtils;
+import com.oneaccess.authjar.utils.AppUserUtil;
 import com.oneaccess.auth.services.common.GenericResponseDTO;
 import com.oneaccess.auth.services.webapp.user.UserService;
 import com.oneaccess.auth.services.webapp.user.dto.UpdatePasswordRequestDTO;
@@ -18,7 +18,7 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping("users")
-//@PreAuthorize("isAuthenticated()")
+@PreAuthorize("isAuthenticated()")
 public class UserController {
 
     private final UserService userService;
@@ -65,7 +65,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<?> retrieveAuthenticatedUser() {
-        Optional<Long> currentUserId = AppSecurityUtils.getCurrentUserId();
+        Optional<Long> currentUserId = AppUserUtil.getCurrentUserId();
         log.info("User API: retrieve authenticated user details for userId: ", currentUserId.get());
         UserDTO genericResponse = userService.getUserById(currentUserId.get());
         return new ResponseEntity<>(genericResponse, HttpStatus.OK);

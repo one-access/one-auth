@@ -11,14 +11,15 @@ COPY one-auth-jar/pom.xml one-auth-jar/pom.xml
 # Copy sources and build the application
 COPY one-auth-app/src one-auth-app/src
 COPY one-auth-jar/src one-auth-jar/src
+#RUN mvn clean
 RUN mvn -pl one-auth-app -am -DskipTests package
 
 # ------------ Runtime stage ------------
 # Use a minimal JRE to run the built jar
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-COPY --from=build /workspace/one-auth-app/target/one-auth-app-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /workspace/one-auth-app/target/one-auth-app-0.0.1-SNAPSHOT.jar one-auth-app.jar
 
 # Expose application port and run
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java","-jar","one-auth-app.jar"]

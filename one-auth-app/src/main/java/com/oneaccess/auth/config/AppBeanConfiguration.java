@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 
@@ -25,7 +26,7 @@ public class AppBeanConfiguration {
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = JsonMapper.builder()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .addModule(new JavaTimeModule())
+                .findAndAddModules()
                 .build();
         return mapper;
     }
@@ -58,5 +59,14 @@ public class AppBeanConfiguration {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * RestTemplate bean for HTTP client operations
+     *
+     * @return RestTemplate
+     */
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
 }

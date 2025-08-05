@@ -1,0 +1,42 @@
+one-auth:
+
+  application:
+    app-id: ""  # Required
+    # KeyPair must be set for service-auth feature or for creating service tokens
+    key-pair:
+      current-kid: ""
+      private-key-b64: ""
+      public-key-b64: ""
+
+    # Public APIs that don't require any JWT authentication
+    app-exclusion-patterns:
+      - "/health"
+      - "/actuator/health"
+
+    # Service JWT authentication configuration
+    service-auth:
+      # If service auth enabled all apis are protected. Define an exclusion pattern if wants to allow.
+      service-exclusion-patterns:
+        - "/health"
+        - "/actuator/health"
+
+      api-patterns:
+        # Universal Access using wildcard - Any valid service token can access
+        - pattern: "/api/services/**"
+          app-permissions:
+            "*": [ "READ", "WRITE" ]  # All valid service apps get full access
+
+        # App-Specific Control with scopes
+        - pattern: "/api/payments/**"
+          app-permissions:
+            payment-service: [ "READ", "WRITE" ]
+            admin-service: [ "READ" ]
+
+  auth-server:
+    base-url: ${APP_URL_AUTH_SERVER}
+    jwks-api: "/.well-known/jwks.json"
+    offline-mode: false
+
+
+      
+

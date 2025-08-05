@@ -28,6 +28,12 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>com.oneaccess.auth</groupId>
+            <artifactId>one-auth-jar</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!--  springframework dependencies      -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -62,6 +68,14 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
         <!--  External Required dependencies      -->
@@ -134,12 +148,18 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- ============ OPTIONAL DEPENDENCIES =============      -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-freemarker</artifactId>
         </dependency>
+
 
     </dependencies>
 

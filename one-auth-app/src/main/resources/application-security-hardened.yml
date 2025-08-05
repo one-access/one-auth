@@ -1,0 +1,138 @@
+# Security-hardened configuration template for OneAuth
+# This file demonstrates the security improvements made to the application
+
+spring:
+  profiles:
+    active: production
+  main:
+    allow-bean-definition-overriding: true
+
+# Environment-based CORS configuration (no hardcoded origins)
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://yourapp.com,https://api.yourapp.com}
+  
+  # Rate limiting configuration
+  rate-limit:
+    enabled: true
+    login:
+      requests: 5
+      window-minutes: 15
+    register:
+      requests: 3
+      window-minutes: 60
+    password-reset:
+      requests: 2
+      window-minutes: 60
+    general:
+      requests: 10
+      window-minutes: 15
+
+# SECURITY FIX: Secure key management using environment variables
+one-auth:
+  application:
+    app-id: ${APP_ID}
+    app-name: ${APP_NAME:oneauth-server}
+    
+    key-pair:
+      current-kid: ${AUTH_IDENTITY_KID}
+      # NEW: Use environment variable names instead of direct values
+      private-key-env: "AUTH_IDENTITY_PRIVATE_KEY"
+      public-key-env: "AUTH_IDENTITY_PUBLIC_KEY"
+    
+    app-exclusion-patterns:
+      - "/health"
+      - "/actuator/health"
+      - "/.well-known/jwks.json"
+      - "/error"
+    
+    service-auth:
+      disabled: false # Enable service authentication by default
+      service-exclusion-patterns:
+        - "/health"
+        - "/actuator/health"
+        - "/.well-known/jwks.json"
+      
+      service-jwt-token-validity: PT1H # 1 hour (production setting)
+      
+      api-patterns:
+        - pattern: "/api/services/**"
+          app-permissions:
+            "*": ["READ", "WRITE"]
+  
+  # SECURITY FIX: Secure key source configuration
+  security:
+    key-source: environment # Options: environment, aws-secrets, azure-keyvault, file
+    validate-permissions: true
+    secrets-prefix: oneauth
+
+  auth-server:
+    base-url: ${AUTH_SERVER_URL}
+    jwks-api: "/.well-known/jwks.json"
+    offline-mode: false
+
+# Database configuration
+spring:
+  datasource:
+    url: jdbc:mysql://${MYSQL_URL:localhost}:${MYSQL_PORT:3306}/${MYSQL_ONEAUTH_DB_NAME:oneauth-db}?useSSL=true&requireSSL=true&verifyServerCertificate=true
+    username: ${MYSQL_ONEAUTH_USERNAME}
+    password: ${MYSQL_ONEAUTH_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate # Use validate in production
+    show-sql: false # Never show SQL in production
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+# Security logging configuration
+logging:
+  level:
+    com.oneaccess.auth.security: INFO
+    com.oneaccess.auth.controller.ExceptionHandlerController: WARN
+    org.springframework.security: WARN
+    # NEVER set DEBUG level for security components in production
+    
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Actuator security
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never # Hide details in production
+  security:
+    enabled: true
+
+# Server configuration
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    session:
+      cookie:
+        secure: true # HTTPS only
+        http-only: true
+        same-site: strict
+  
+  # Security headers (additional to programmatic configuration)
+  error:
+    include-stacktrace: never
+    include-message: never
+
+# Environment variables required:
+# - CORS_ALLOWED_ORIGINS: Comma-separated list of allowed origins
+# - APP_ID: Unique application identifier
+# - AUTH_IDENTITY_KID: Key ID for JWT signing
+# - AUTH_IDENTITY_PRIVATE_KEY: Private key for JWT signing (PEM format)
+# - AUTH_IDENTITY_PUBLIC_KEY: Public key for JWT verification (PEM format)
+# - AUTH_SERVER_URL: URL of the authentication server
+# - MYSQL_URL: MySQL server hostname
+# - MYSQL_ONEAUTH_USERNAME: Database username
+# - MYSQL_ONEAUTH_PASSWORD: Database password
+# - MYSQL_ONEAUTH_DB_NAME: Database name

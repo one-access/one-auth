@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public class AppWebUtils {
 
-    private static int cookieExpireSeconds;
+    private static int cookieExpireSeconds = 120; // default 2 minute
 
     public AppWebUtils(int cookieExpireSeconds) {
         AppWebUtils.cookieExpireSeconds = cookieExpireSeconds;
@@ -42,6 +42,7 @@ public class AppWebUtils {
             cookie.setPath("/");
             cookie.setHttpOnly(true);
             cookie.setMaxAge(cookieExpireSeconds);
+            cookie.setSecure(false); // TODO set this to true in production
             response.addCookie(cookie);
         }
     }

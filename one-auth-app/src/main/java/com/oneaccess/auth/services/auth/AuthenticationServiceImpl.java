@@ -1,7 +1,9 @@
 package com.oneaccess.auth.services.auth;
 
-import com.oneaccess.auth.security.JWTTokenProvider;
-import com.oneaccess.auth.security.oauth.common.SecurityEnums;
+import com.oneaccess.auth.security.UserJWTKeyProvider;
+import com.oneaccess.authjar.service.OneAuthJwtService;
+import com.oneaccess.authjar.user.CustomUserDetails;
+import com.oneaccess.authjar.user.enums.ProviderEnums;
 import com.oneaccess.auth.services.auth.dtos.AuthResponseDTO;
 import com.oneaccess.auth.services.auth.dtos.LoginRequestDTO;
 import com.oneaccess.auth.services.auth.dtos.RegisterUserRequestDTO;
@@ -21,14 +23,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
-    private final JWTTokenProvider jwtTokenProvider;
+    private final UserJWTKeyProvider userJWTKeyProvider;
 
     public AuthenticationServiceImpl(AuthenticationManager authenticationManager,
                                      UserService userService,
-                                     JWTTokenProvider jwtTokenProvider) {
+                                     UserJWTKeyProvider userJWTKeyProvider) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
-        this.jwtTokenProvider = jwtTokenProvider;
+        this.userJWTKeyProvider = userJWTKeyProvider;
     }
 
 
@@ -36,9 +38,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthResponseDTO loginUser(LoginRequestDTO loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-            String token = jwtTokenProvider.createJWTToken(authentication);
+            CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+            String token = userJWTKeyProvider.createUserToken(customUserDetails);
             AuthResponseDTO authResponseDTO = new AuthResponseDTO();
-            authResponseDTO.setToken(token);
+            authResponseDTO.setAccessToken(token);
+            authResponseDTO.setOneAuthUser(customUserDetails.getOneAuthUser());
+            authResponseDTO.setRefreshToken("refreshToken-value-to-be-supported");
             return authResponseDTO;
         } catch (AuthenticationException e) {
             if (e instanceof DisabledException) {
@@ -54,7 +59,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         userDTO.setEmail(registerUserRequestDTO.getEmail());
         userDTO.setPassword(registerUserRequestDTO.getPassword());
         userDTO.setFullName(registerUserRequestDTO.getFullName());
-        userDTO.setRegisteredProviderName(SecurityEnums.AuthProviderId.app_custom_authentication);
+        userDTO.setRegisteredProviderName(ProviderEnums.AuthProviderId.app_custom_authentication);
         UserDTO user = userService.createUser(userDTO);
         return user;
     }

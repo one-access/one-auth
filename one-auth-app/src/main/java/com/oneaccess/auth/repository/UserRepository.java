@@ -1,7 +1,7 @@
 package com.oneaccess.auth.repository;
 
 import com.oneaccess.auth.entities.UserEntity;
-import com.oneaccess.auth.security.oauth.common.SecurityEnums;
+import com.oneaccess.authjar.user.enums.ProviderEnums;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -23,14 +23,14 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>, JpaSpec
             "u.email = :email and u.registeredProviderName = :registeredProviderName " +
             "and u.verificationCodeExpiresAt >= UTC_TIMESTAMP and u.verificationCode = :verificationCode")
     Optional<UserEntity> verifyAndRetrieveEmailVerificationRequestUser(@Param("email") String email,
-                                                                       @Param("registeredProviderName") SecurityEnums.AuthProviderId registeredProviderName,
+                                                                       @Param("registeredProviderName") ProviderEnums.AuthProviderId registeredProviderName,
                                                                        @Param("verificationCode") String verificationCode);
 
     @Query("SELECT u FROM UserEntity u WHERE " +
             "u.email = :email and u.registeredProviderName = :validProviderName " +
             "and u.verificationCodeExpiresAt >= UTC_TIMESTAMP and u.verificationCode = :verificationCode")
     Optional<UserEntity> verifyAndRetrieveForgotPasswordRequestUser(@Param("email") String email,
-                                                                    @Param("validProviderName") SecurityEnums.AuthProviderId validProviderName,
+                                                                    @Param("validProviderName") ProviderEnums.AuthProviderId validProviderName,
                                                                     @Param("verificationCode") String verificationCode);
 
 }

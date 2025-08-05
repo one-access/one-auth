@@ -1,0 +1,72 @@
+server:
+  port: ${SERVER_PORT:8082}
+  tomcat:
+    max-threads: ${TOMCAT_MAX_THREADS:5}
+    min-spare-threads: ${TOMCAT_MIN_SPARE_THREADS:2}
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+    min-response-size: 2048
+
+spring:
+  application:
+    name: demo2-app
+
+one-auth:
+
+  application:
+    app-id: "demo2-service"  # Application ID
+
+    # KeyPair must be set for service-auth feature or for creating service tokens
+    key-pair:
+      current-kid: ${DEMO2_SERVICE_IDENTITY_KID}
+      private-key-b64: ${DEMO2_SERVICE_IDENTITY_PRIVATE_KEY}
+      public-key-b64: ${DEMO2_SERVICE_IDENTITY_PUBLIC_KEY}
+
+    # Public APIs that don't require any JWT authentication
+    app-exclusion-patterns:
+      - "/api/demo/public"
+      - "/health"
+      - "/actuator/health"
+
+    service-auth:
+      api-patterns:
+        - pattern: "*/services/payments/**"
+          app-permissions:
+            "0100_DEMO3": ["READ", "WRITE"]  # payments api accept service-token only from Demo3 app
+
+        - pattern: "*/services/**"
+          app-permissions:
+            "*": ["READ", "WRITE"]  # service api requires service-token
+
+      service-exclusion-patterns:
+        -
+
+# Logging configuration
+logging:
+  level:
+    root: WARN
+    com.oneaccess: DEBUG
+    org:
+      springframework:
+        web: WARN
+        security: WARN
+  file:
+    name: /var/log/oneaccess/one-auth.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Actuator configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+        base-path: /actuator
+  health:
+    mail:
+      enabled: true
+  endpoint:
+    health:
+      show-details: never

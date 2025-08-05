@@ -1,25 +1,46 @@
 server:
-  port: ${SERVER_PORT:8081}
+  port: ${SERVER_PORT:8080}
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 20
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+    min-response-size: 2048
 
-# jdbc and jpa config
 spring:
+  application:
+    name: OneAuth-Service
+  main:
+    allow-bean-definition-overriding: false
+
+  # jdbc and jpa config
   datasource:
-    url: jdbc:mysql://${MYSQL_URL:localhost}:${MYSQL_PORT:3306}/${MYSQL_ONEAUTH_DB_NAME:oneauth-db}?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+    url: jdbc:mysql://${MYSQL_URL:localhost}:${MYSQL_PORT:3306}/${MYSQL_ONEAUTH_DB_NAME:oneauth-db}?allowPublicKeyRetrieval=true&useSSL=false
     username: ${MYSQL_ONEAUTH_USERNAME:root}
     password: ${MYSQL_ONEAUTH_PASSWORD:root}
-
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 120000
+      connection-timeout: 30000
   jpa:
-    show-sql: true
+    show-sql: ${APP_DEBUG_JPA_SHOW_SQL:true}
     hibernate:
-      ddl-auto: update
+      ddl-auto: update  # Use proper DB migration in production
       naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
         jdbc:
           time_zone: UTC
+        # Performance optimizations
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
+        jdbc.batch_size: 50
 
-  # Mail Config. Migrate to seperate service.
+  # Mail Config for production
   mail:
     properties:
       mail:
@@ -31,81 +52,159 @@ spring:
           connectiontimeout: '5000'
           writetimeout: '5000'
     host: ${MAIL_HOST:smtp.gmail.com}
-    username: ${MAIL_USERNAME:<<YOUR GMAIL>>}
-    password: ${MAIL_PASSWORD:<<Generate-App-password-for-gmail>>} # Google Account, Search "App Passwords", generate password
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     port: ${MAIL_PORT:587}
+
   # freemarker config - used for email templates
   freemarker:
     template-loader-path: classpath:/mail-templates
     suffix: .ftl
+    cache: true
+
+  # Redis configuration (for production). Required when myapp.cache.type=redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:redis}
+      database: ${REDIS_DATABASE:0}
+      timeout: 2000ms
+      jedis:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+#  web:
+#    cors:
+#      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+#      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
 
   # Spring security oauth2 config
   security:
+#    headers:
+#      frame-options: deny
+#      content-type-options: nosniff
     oauth2:
       client:
         registration:
           google:
-            clientId: ${GOOGLE_CLIENT_ID:<<ClientID>>}
-            clientSecret: ${GOOGLE_CLIENT_SECRET:<<ClientSecret>>}
+            clientId: ${GOOGLE_CLIENT_ID}
+            clientSecret: ${GOOGLE_CLIENT_SECRET}
             redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
             scope: email, profile
 
           facebook:
-            clientId: ${FACEBOOK_CLIENT_ID:<<ClientID>>}
-            clientSecret: ${FACEBOOK_CLIENT_SECRET:<<ClientSecret>>}
+            clientId: ${FACEBOOK_CLIENT_ID}
+            clientSecret: ${FACEBOOK_CLIENT_SECRET}
             redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
             scope: email, public_profile
 
           github:
-            clientId: ${GITHUB_CLIENT_ID:<<ClientID>>}
-            clientSecret: ${GITHUB_CLIENT_SECRET:<<ClientSecret>>}
+            clientId: ${GITHUB_CLIENT_ID}
+            clientSecret: ${GITHUB_CLIENT_SECRET}
             redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
             scope: user, user:email
 
-
-# logging config
+# logging config - minimal for production
 logging:
   level:
-    root: INFO
+    root: WARN
+    com.oneaccess: INFO
     org:
       springframework:
-        web: DEBUG
-        security: DEBUG
+        web: WARN
+        security: WARN
+#  file:
+#    name: /var/log/oneaccess/one-auth.log
+#  pattern:
+#    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+#    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
 management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,info
+      base-path: /actuator
   health:
     mail:
       enabled: false
+    redis:
+      enabled: false
   endpoint:
     health:
-      show-details: always
+      show-details: never  # Don't expose detailed health info in production
+
+# ---------------------------------------------------------------------------
+# --- App Configurations ---
+# ---------------------------------------------------------------------------
+
+# One-Auth Security Configuration
+one-auth:
+
+  application:
+    app-id: "auth-server"  # Required
+
+    # KeyPair must be set for service-auth feature or for creating tokens. Not required if only using for user-auth authentication.
+    key-pair:
+      current-kid: ${AUTH_SERVER_IDENTITY_KID}
+      private-key-b64: ${AUTH_SERVER_IDENTITY_PRIVATE_KEY}
+      public-key-b64: ${AUTH_SERVER_IDENTITY_PUBLIC_KEY}
+
+    app-exclusion-patterns:
+      - /actuator/health
+      - /actuator/info
+      - /auth/**
+      - /oauth2/**
+      - /.well-known/**
+
+    # Service-to-service authentication
+    service-auth:
+      disabled: true
+
+  auth-server:
+    base-url: ${AUTH_SERVER_SERVICE_URL:http://localhost:8080}
+    jwks-api: "/.well-known/jwks.json"
+    offline-mode: true
+
+# Apps configuration
+apps:
+  dispatcher-service:
+    base-url: ${APPS_DISPATCHER_SERVICE_URL:http://localhost:8085}
+
 
 # App Custom Properties
 myapp:
-
   appName: One Auth Security OAuth2 and JWT
   officialCompanyName: OneAccess
-  officialCompanyDomain: http://localhost:4200
-
-  jwt:
-    privateKeyB64: ${JWT_PRIVATE_KEY_B64:}
-    publicKeyB64: ${JWT_PUBLIC_KEY_B64:}
-    expiration: ${JWT_EXPIRATION_DURATION:1d}
+  officialCompanyDomain: https://oneaccess.com
 
   cors:
-    allowedOrigins: ${APP_ALLOWED_ORIGINS:http://localhost:8080,http://localhost:4200}
+    allowedOrigins: ${APP_ALLOWED_ORIGINS:http://localhost:8080,http://localhost:4200,http://localhost:3000,http://localhost:3001}
 
   oauth2:
-    authorizedRedirectOrigins: ${OAUTH2_AUTHORIZED_REDIRECT_URIS:http://localhost:8080,http://localhost:4200}
-    cookieExpireSeconds: ${OAUTH2_COOKIE_EXPIRE_SECONDS:120}
+    authorizedRedirectOrigins: ${OAUTH2_AUTHORIZED_REDIRECT_URIS:http://localhost:8080,http://localhost:4200,http://localhost:3000,http://localhost:3001}
+    cookieExpireSeconds: ${OAUTH2_COOKIE_EXPIRE_SECONDS:600}
 
   mail:
-    defaultEmailAddress: ${APP_EMAIL:example@gmail.com}
+    defaultEmailAddress: ${APP_EMAIL:support@oneaccess.com}
     verificationCodeExpirationSeconds: 10m
+
+  auth:
+    email:
+      verRequiredForCustomSignup: true
 
   defaults:
     defaultPageStart: ${DEFAULT_PAGE_START:0}
-    defaultPageSize: ${DEFAULT_PAGE_SIZE:50}
+    defaultPageSize: ${DEFAULT_PAGE_SIZE:20}
+
+  # Config for local testing
+  devConfig:
+    isEnabled: true  # Below properties will only apply if isEnabled is set true.  Important!: This must be false in production
+    disabledEmailSend: true  # If disable do not send email, and also Auto-verify email for custom signup.
+
+  # Cache configuration - centralized in myapp section
+  cache:
+    type: memory  # memory, redis

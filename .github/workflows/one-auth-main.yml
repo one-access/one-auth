@@ -1,0 +1,104 @@
+name: Build & Push Image
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: '17'
+  MAVEN_OPTS: '-Xmx2048m'
+  IMAGE_NAME: 'one-auth'
+
+jobs:
+  build-and-push:
+    name: Build & Push to GCP
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    outputs:
+      image-tag: ${{ steps.meta.outputs.image-tag }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('pom.xml', '*/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+            
+      - name: Build application
+        run: mvn clean package -DskipTests
+        
+      - name: Generate image metadata
+        id: meta
+        run: |
+          echo "image-tag=${{ vars.GAR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_OUTPUT
+          
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: 'docker-credential-gcr'
+          
+      - name: Configure Docker for GAR
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+        
+      - name: Build and Push to Google Artifact Registry
+        run: |
+          docker build -t ${{ vars.GAR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest .
+          docker push ${{ vars.GAR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          
+      # AWS ECR Push (Commented - Uncomment when AWS is needed)
+      # - name: Configure AWS credentials  
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+      #     aws-region: ${{ vars.AWS_REGION }}
+      #     
+      # - name: Login to Amazon ECR
+      #   uses: aws-actions/amazon-ecr-login@v2
+      #   
+      # - name: Build and Push to Amazon ECR
+      #   run: |
+      #     docker build -t ${{ vars.ECR_REGISTRY }}:latest .
+      #     docker push ${{ vars.ECR_REGISTRY }}:latest
+
+  notify:
+    name: Build Summary  
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Build Success
+        if: needs.build-and-push.result == 'success'
+        run: |
+          echo "✅ **Build & Push Successful**"
+          echo "Image: ${{ needs.build-and-push.outputs.image-tag }}"
+          
+      - name: Build Failure
+        if: needs.build-and-push.result == 'failure'
+        run: |
+          echo "❌ **Build & Push Failed**"
+          echo "Check the workflow logs for details"

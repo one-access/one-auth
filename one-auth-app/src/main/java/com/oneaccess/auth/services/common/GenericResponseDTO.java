@@ -14,4 +14,11 @@ public class GenericResponseDTO<T> {
     private T response;
 
     private String messageCode;
+    
+    private String errorId;
+    
+    public GenericResponseDTO(String messageCode, T response) {
+        this.messageCode = messageCode;
+        this.response = response;
+    }
 }

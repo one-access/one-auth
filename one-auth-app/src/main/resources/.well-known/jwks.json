@@ -1,0 +1,38 @@
+{
+  "auth-server": {
+    "keys": [
+      {
+        "kty": "RSA",
+        "use": "sig",
+        "alg": "RS256",
+        "kid": "BA8A7D28-F226-48F3-B064-535D3E5FF1F5",
+        "n": "sqfJQq29gyy1xsTnX1FXyC53myhlu8GcPRq0GpGzbzlMbCOdt0lWU3uvGg5kNeMp6UK4zWE4j-Pn_MauPBuT4QMi-W6tsuBDd22CQPiPb9U2SNoEFerIdhsmSwKI1uZ-30ecXcRpOyGTtEu4iJ4KUlK9fhNn_-7-Ah_QUDzD8ysgMVU1RUb9ptVpYeh52mJG4XhoIyQo7L6ZyZmBIT5nYQr4GDy7zwDrNREcRC5KzLWjoaJBGAARYIyR8LaAExFUNiwiMbytjh8tzAC73j4Ah8bkR6LpRwcC2-sSfFk6UVaTnwfD_YcVbOsP3QSIpE1WwQ5kXU4ldeUAeTAEumgbQQ",
+        "e": "AQAB"
+      }
+    ]
+  },
+  "demo2-service": {
+    "keys": [
+      {
+        "kty": "RSA",
+        "use": "sig",
+        "alg": "RS256",
+        "kid": "401E1A2E-0F55-455D-94B6-B05C82C2F25C",
+        "n": "0m6erfqZnB_PLTVSqFsgAlbpcQfhEa5uPkoX-9m04jzu_5MtCyywq_mK0zqC9T2wOTT0IS7EFApKCnasTPzR5oax-hCrTgYUdkSxu2xWp5ZPwU14z5l91USeGhVIJdFL7z_eImuIwbrv0zZt7vAZNIVpoF0nvexFCbaPJqIIg2VYlDhUCa5z1wSDR2ZkkNQks14V7c5BihRsko8btxLG4K9Ok5kdG4ZaUJoFmC96im1nhMBpi3W4vrO7dkmqyFCftGHfjL-HjAfaNdswfTIUalK1-7rTX35I_tZSUPP2v5vzQqTH92hFw_PzlOJU19bXm-an6qgAGodpaosxq1BNfQ",
+        "e": "AQAB"
+      }
+    ]
+  },
+  "dispatcher-service": {
+    "keys": [
+      {
+        "kty": "RSA",
+        "use": "sig",
+        "alg": "RS256",
+        "kid": "502F3B4C-1234-5678-9ABC-DEF012345678",
+        "n": "nG1PkkJkOUBNM_iRuvuP4yEvOxR6T5O2sCMMz6s0-9R_pNJp3iHQW47YrO2M3IRvMDdUdUABToyGPUxjE_GDOaMFhDCtFOsxNy7Hz9VwHNNcENh4s7tU9ZR5934vENnrUqeWJPpfzcHHcvWMS3cWPfQiAPDkLO6yNkqjQReX2VM7rIJfLY6gZBILIOG38nYySu6WJLBX803OOIDfORlYmfY0AocP96N82boCMMt4dTGCepBHkDeiEHOdmr1lzTozih9yl7cJmMjLuPH-WGLRDdN3z5JXwCE0mu4QMAIePEM9iepCHuf05-Oenac3ZQZyI8YM28YjkDfzNQMf77K2Fw",
+        "e": "AQAB"
+      }
+    ]
+  }
+}

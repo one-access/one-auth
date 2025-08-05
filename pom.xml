@@ -13,5 +13,7 @@
     <modules>
         <module>one-auth-app</module>
         <module>one-auth-jar</module>
+
+<!--        <module>demo-app2</module>-->
     </modules>
 </project>

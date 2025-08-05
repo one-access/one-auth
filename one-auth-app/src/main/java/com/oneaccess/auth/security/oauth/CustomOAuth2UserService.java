@@ -1,14 +1,15 @@
 package com.oneaccess.auth.security.oauth;
 
 import com.oneaccess.auth.entities.UserEntity;
-import com.oneaccess.auth.security.AppSecurityUtils;
-import com.oneaccess.auth.security.CustomUserDetails;
+import com.oneaccess.authjar.utils.AppUserUtil;
+import com.oneaccess.authjar.user.CustomUserDetails;
 import com.oneaccess.auth.security.oauth.common.CustomAbstractOAuth2UserInfo;
 import com.oneaccess.auth.security.oauth.common.OAuth2Util;
-import com.oneaccess.auth.security.oauth.common.SecurityEnums;
+import com.oneaccess.authjar.user.enums.ProviderEnums;
 import com.oneaccess.auth.services.webapp.user.UserMapper;
 import com.oneaccess.auth.services.webapp.user.UserService;
 import com.oneaccess.auth.services.webapp.user.dto.UserDTO;
+import com.oneaccess.authjar.user.OneAuthUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -74,7 +75,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         CustomAbstractOAuth2UserInfo customAbstractOAuth2UserInfo = OAuth2Util.getOAuth2UserInfo(clientRegistrationId, oAuth2User.getAttributes());
 
         // Check if the email is provided by the OAuthProvider
-        SecurityEnums.AuthProviderId registeredProviderId = SecurityEnums.AuthProviderId.valueOf(clientRegistrationId);
+        ProviderEnums.AuthProviderId registeredProviderId = ProviderEnums.AuthProviderId.valueOf(clientRegistrationId);
         String userEmail = customAbstractOAuth2UserInfo.getEmail();
         if (!StringUtils.hasText(userEmail)) {
             throw new InternalAuthenticationServiceException("Sorry, Couldn't retrieve your email from Provider " + clientRegistrationId + ". Email not available or Private by default");
@@ -97,9 +98,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
 
         List<GrantedAuthority> grantedAuthorities = oAuth2User.getAuthorities().stream().collect(Collectors.toList());
-        grantedAuthorities.add(new SimpleGrantedAuthority(AppSecurityUtils.ROLE_DEFAULT));
+        grantedAuthorities.add(new SimpleGrantedAuthority(AppUserUtil.ROLE_DEFAULT));
         UserEntity userEntity = userMapper.toEntity(userDTO);
-        return CustomUserDetails.buildWithAuthAttributesAndAuthorities(userEntity, grantedAuthorities, oAuth2User.getAttributes());
+        OneAuthUser oneAuthUser = UserEntity.buildOneAuthUser(userEntity);
+        return CustomUserDetails.buildWithAuthAttributesAndAuthorities(userEntity.getEmail(), userEntity.getPassword(), oneAuthUser, grantedAuthorities, oAuth2User.getAttributes());
     }
 
     private UserDTO registerNewOAuthUser(OAuth2UserRequest oAuth2UserRequest,
@@ -107,9 +109,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         UserDTO userDTO = new UserDTO();
         userDTO.setFullName(customAbstractOAuth2UserInfo.getName());
         userDTO.setEmail(customAbstractOAuth2UserInfo.getEmail());
-        userDTO.setRegisteredProviderName(SecurityEnums.AuthProviderId.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()));
+        userDTO.setRegisteredProviderName(ProviderEnums.AuthProviderId.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()));
         userDTO.setRegisteredProviderId(customAbstractOAuth2UserInfo.getId());
-        userDTO.setRoles(Set.of(AppSecurityUtils.ROLE_DEFAULT));
+        userDTO.setRoles(Set.of(AppUserUtil.ROLE_DEFAULT));
         userDTO.setEmailVerified(true);
         UserDTO returnedUserDTO = userService.createUser(userDTO);
         return returnedUserDTO;

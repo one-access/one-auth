@@ -51,13 +51,14 @@ public class AppProperties {
     @Data
     public static class Mail {
         private String defaultEmailAddress;
-        private Duration verificationCodeExpirationSeconds = Duration.ofMinutes(10);
+        private Duration verificationCodeExpirationDuration = Duration.ofMinutes(10);
     }
     
     @Getter
     @Setter
     @Data
     public static class Auth {
+        private Duration userJwtExpirationDuration = Duration.ofMinutes(10);
         private Email email = new Email();
 
         @Getter

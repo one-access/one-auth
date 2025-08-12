@@ -37,5 +37,5 @@ build/
 
 # Sensitive
 keys/
-.env
+dev.env
 

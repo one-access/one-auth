@@ -23,7 +23,7 @@ services:
     depends_on:
       oneauth-mysql:
         condition: service_healthy
-    env_file: .env
+    env_file: dev.env
     ports:
       - "8080:8080"
     healthcheck:

@@ -1,7 +1,10 @@
 package com.oneaccess.auth.services.auth.dtos;
 
+import com.oneaccess.authjar.user.OneAuthUser;
 import lombok.Builder;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 /**
  * Response DTO for token exchange endpoint.
@@ -14,6 +17,8 @@ public class TokenExchangeResponseDTO {
     private String accessToken;
     private String refreshToken;
     private String tokenType;
-    private int expiresIn;
-    private Object user; // User information extracted from token
+    private long expiresIn;
+    private OneAuthUser authUser;
+    private String originalRequestUri;
+    private LocalDateTime tokenExpiryDate;
 }

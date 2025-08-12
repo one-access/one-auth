@@ -132,7 +132,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException(AppExceptionConstants.USER_RECORD_NOT_FOUND));
         String verificationCode = AppUtils.generateRandomAlphaNumericString(20);
-        long verificationCodeExpirationSeconds = appProperties.getMail().getVerificationCodeExpirationSeconds().getSeconds();
+        long verificationCodeExpirationSeconds = appProperties.getMail().getVerificationCodeExpirationDuration().getSeconds();
         userEntity.setVerificationCodeExpiresAt(Instant.now().plusSeconds(verificationCodeExpirationSeconds));
         userEntity.setVerificationCode(verificationCode);
         userRepository.save(userEntity);
@@ -146,7 +146,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findByEmail(forgotPasswordRequestDTO.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException(AppExceptionConstants.USER_EMAIL_NOT_AVAILABLE));
         String forgotPasswordVerCode = AppUtils.generateRandomAlphaNumericString(20);
-        long verificationCodeExpirationSeconds = appProperties.getMail().getVerificationCodeExpirationSeconds().getSeconds();
+        long verificationCodeExpirationSeconds = appProperties.getMail().getVerificationCodeExpirationDuration().getSeconds();
         userEntity.setVerificationCodeExpiresAt(Instant.now().plusSeconds(verificationCodeExpirationSeconds));
         userEntity.setVerificationCode(forgotPasswordVerCode);
         userRepository.save(userEntity);

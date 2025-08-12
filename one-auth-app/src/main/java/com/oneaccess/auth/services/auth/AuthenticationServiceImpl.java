@@ -1,10 +1,9 @@
 package com.oneaccess.auth.services.auth;
 
 import com.oneaccess.auth.security.UserJWTKeyProvider;
-import com.oneaccess.authjar.service.OneAuthJwtService;
+import com.oneaccess.auth.services.auth.dtos.TokenResponseDTO;
 import com.oneaccess.authjar.user.CustomUserDetails;
 import com.oneaccess.authjar.user.enums.ProviderEnums;
-import com.oneaccess.auth.services.auth.dtos.AuthResponseDTO;
 import com.oneaccess.auth.services.auth.dtos.LoginRequestDTO;
 import com.oneaccess.auth.services.auth.dtos.RegisterUserRequestDTO;
 import com.oneaccess.auth.services.webapp.user.UserService;
@@ -17,6 +16,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -35,16 +37,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
     @Override
-    public AuthResponseDTO loginUser(LoginRequestDTO loginRequest) {
+    public TokenResponseDTO loginUser(LoginRequestDTO loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
             CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-            String token = userJWTKeyProvider.createUserToken(customUserDetails);
-            AuthResponseDTO authResponseDTO = new AuthResponseDTO();
-            authResponseDTO.setAccessToken(token);
-            authResponseDTO.setOneAuthUser(customUserDetails.getOneAuthUser());
-            authResponseDTO.setRefreshToken("refreshToken-value-to-be-supported");
-            return authResponseDTO;
+            String accessToken = userJWTKeyProvider.createUserToken(customUserDetails);
+            Duration jwtExpirationDuration = userJWTKeyProvider.getJwtExpirationDuration();
+            TokenResponseDTO tokenResponseDTO = TokenResponseDTO.builder()
+                    .tokenType("Bearer")
+                    .expiresIn(jwtExpirationDuration.toSeconds())
+                    .token(accessToken)
+                    .refreshToken(null)
+                    .authUser(customUserDetails.getOneAuthUser())
+                    .tokenExpiryDate(LocalDateTime.now().plus(jwtExpirationDuration))
+                    .build();
+
+            return tokenResponseDTO;
         } catch (AuthenticationException e) {
             if (e instanceof DisabledException) {
                 throw new BadCredentialsException(AppExceptionConstants.ACCOUNT_NOT_ACTIVATED);

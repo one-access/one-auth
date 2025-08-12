@@ -7,6 +7,9 @@ server:
     enabled: true
     mime-types: application/json,application/xml,text/html,text/xml,text/plain
     min-response-size: 2048
+  error:
+    include-stacktrace: never   # For production
+    include-message: never # For production
 
 spring:
   application:
@@ -190,9 +193,10 @@ myapp:
 
   mail:
     defaultEmailAddress: ${APP_EMAIL:support@oneaccess.com}
-    verificationCodeExpirationSeconds: 10m
+    verificationCodeExpirationDuration: 10m
 
   auth:
+    userJwtExpirationDuration: 1d
     email:
       verRequiredForCustomSignup: true
 

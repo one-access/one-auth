@@ -1,5 +1,6 @@
 package com.oneaccess.auth.security;
 
+import com.oneaccess.auth.config.AppProperties;
 import com.oneaccess.authjar.config.OneAuthProperties;
 import com.oneaccess.authjar.service.OneAuthJwtService;
 import com.oneaccess.authjar.user.CustomUserDetails;
@@ -16,15 +17,17 @@ public class UserJWTKeyProvider {
 
     private final OneAuthProperties oneAuthProperties;
     private final OneAuthJwtService oneAuthJwtService;
+    private final AppProperties appProperties;
 
     /**
      * Constructor with required dependencies.
      *
      * @param oneAuthProperties The OneAuth properties
      */
-    public UserJWTKeyProvider(OneAuthProperties oneAuthProperties, OneAuthJwtService oneAuthJwtService) {
+    public UserJWTKeyProvider(OneAuthProperties oneAuthProperties, OneAuthJwtService oneAuthJwtService, AppProperties appProperties) {
         this.oneAuthProperties = oneAuthProperties;
         this.oneAuthJwtService = oneAuthJwtService;
+        this.appProperties = appProperties;
     }
 
     /**
@@ -47,17 +50,21 @@ public class UserJWTKeyProvider {
         try {
             String kid = keyPair.getCurrentKid();
             PrivateKey privateKey = SecurityUtil.loadPrivateKey(keyPair.getPrivateKeyB64());
-            long validityInMilliseconds = Duration.ofDays(1).toMillis(); // Default 1 day validity
 
+            Duration userJwtExpirationDuration = appProperties.getAuth().getUserJwtExpirationDuration();
             return oneAuthJwtService.createUserJWTToken(
                     customUserDetails,
                     privateKey,
-                    validityInMilliseconds,
+                    userJwtExpirationDuration.toMillis(),
                     kid // Pass the kid for key rotation
             );
         } catch (Exception e) {
             log.error("Failed to create user token: {}", e.getMessage(), e);
             return null;
         }
+    }
+
+    public Duration getJwtExpirationDuration() {
+        return this.appProperties.getAuth().getUserJwtExpirationDuration();
     }
 }

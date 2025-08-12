@@ -90,7 +90,7 @@ curl http://localhost:8080/.well-known/jwks.json | jq '.keys | length'  # Should
 curl -X POST http://localhost:8080/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "test@example.com",
+    "email": "test01@example.com",
     "fullName": "Test User", 
     "password": "password123"
   }'
@@ -101,7 +101,7 @@ curl -X POST http://localhost:8080/auth/register \
 curl -X POST http://localhost:8080/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "test@example.com",
+    "email": "test01@example.com",
     "password": "password123"
   }'
 ```
